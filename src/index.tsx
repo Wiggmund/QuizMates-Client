@@ -9,12 +9,16 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { CssBaseline } from '@mui/material';
+import { Provider } from 'react-redux';
+import { AppStore } from './redux';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
 	<React.StrictMode>
 		<CssBaseline />
-		<App />
+		<Provider store={AppStore}>
+			<App />
+		</Provider>
 	</React.StrictMode>
 );
 
@@ -22,3 +26,4 @@ root.render(
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+

@@ -1,9 +1,15 @@
 import React from 'react';
+import { StudentsList } from './components';
 
 type Props = {};
 
 const App = (props: Props) => {
-	return <div>App</div>;
+	return (
+		<>
+			<StudentsList />
+		</>
+	);
 };
 
 export default App;
+
