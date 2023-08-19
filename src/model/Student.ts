@@ -7,6 +7,10 @@ export interface Student {
   group_id: number;
 }
 
-export interface StudentWithGroup extends Student {
+export type StudentWithGroup = Omit<Student, "group_id"> & {
   group: Group;
+};
+
+export interface StudentsMap {
+  [key: string]: Student;
 }

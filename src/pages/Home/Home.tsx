@@ -34,7 +34,7 @@ const Home = (props: Props) => {
             <Typography variant="h3" color="primary" mb={2}>
               Hosts
             </Typography>
-            <Typography variant="h6" color="initial">
+            <Typography variant="h4" color="primary">
               {hostsAmount}
             </Typography>
           </SimpleContainer>
@@ -45,7 +45,7 @@ const Home = (props: Props) => {
             <Typography variant="h3" color="primary" mb={2}>
               Groups
             </Typography>
-            <Typography variant="h6" color="initial">
+            <Typography variant="h4" color="primary">
               {groupsAmount}
             </Typography>
           </SimpleContainer>
@@ -56,7 +56,7 @@ const Home = (props: Props) => {
             <Typography variant="h3" color="primary" mb={2}>
               Students
             </Typography>
-            <Typography variant="h6" color="initial">
+            <Typography variant="h4" color="primary">
               {studentsAmount}
             </Typography>
           </SimpleContainer>

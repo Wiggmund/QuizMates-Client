@@ -17,8 +17,8 @@ const HostsTable = (props: Props) => {
 
   const hostsRowsHeaders = (
     <TableRow>
-      <TableCell align="left">Group ID</TableCell>
-      <TableCell align="left">Group name</TableCell>
+      <TableCell align="left">Host ID</TableCell>
+      <TableCell align="left">Full Name</TableCell>
     </TableRow>
   );
 
