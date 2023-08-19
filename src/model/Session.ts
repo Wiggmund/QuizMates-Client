@@ -1,9 +1,18 @@
+export const SessionStatus: {
+  finished: any;
+  active: any;
+} = {
+  finished: "finished",
+  active: "active",
+};
+
 export interface Session {
-	id: number;
-	title: string;
-	description: string;
-	date: Date;
-	best_student: number;
-	best_group: number;
-	status: boolean;
+  id: number;
+  title: string;
+  description: string;
+  host: number;
+  date: Date;
+  bestStudent: number;
+  bestGroup: number;
+  status: keyof typeof SessionStatus;
 }
