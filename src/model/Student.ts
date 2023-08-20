@@ -5,6 +5,7 @@ export interface Student {
   firstName: string;
   lastName: string;
   group_id: number;
+  isTeamLead: boolean;
 }
 
 export type StudentWithGroup = Omit<Student, "group_id"> & {

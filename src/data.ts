@@ -1,4 +1,3 @@
-import { group } from "console";
 import {
   Group,
   Host,
@@ -14,24 +13,28 @@ export const studentsSource: Student[] = [
     firstName: "Sem",
     lastName: "Vin",
     group_id: 1,
+    isTeamLead: false,
   },
   {
     id: 2,
     firstName: "Dean",
     lastName: "Vin",
     group_id: 1,
+    isTeamLead: false,
   },
   {
     id: 3,
     firstName: "Alex",
     lastName: "Trim",
     group_id: 2,
+    isTeamLead: false,
   },
   {
     id: 4,
     firstName: "John",
     lastName: "Don",
     group_id: 2,
+    isTeamLead: false,
   },
 ];
 
@@ -58,6 +61,14 @@ export const groupSource: Group[] = [
       .length,
   },
 ];
+
+groupSource.forEach((group) => {
+  if (group.teamLead !== -1) {
+    const student = studentsSource.find((st) => st.id === group.teamLead);
+
+    if (student) student.isTeamLead = true;
+  }
+});
 
 export const studentsWithGroupsSource: StudentWithGroup[] = studentsSource.map(
   (student) => {
@@ -118,3 +129,36 @@ export const sessionsSource = sessionTitlesDescriptions.map((item, index) => {
     status: randIndex(statusVariants),
   } as Session;
 });
+
+export function fetchGroupByTeamLeadId(teamLeadId: number): Group | undefined {
+  return groupSource.slice().find((group) => group.teamLead === teamLeadId);
+}
+
+export function fetchGroupById(groupId: number): Group | undefined {
+  return groupSource.slice().find((group) => group.id === groupId);
+}
+
+export function fetchStudentById(studentId: number): Student | undefined {
+  return studentsSource.slice().find((student) => student.id === studentId);
+}
+
+export function fetchStudentsByGroup(groupId: number): Student[] {
+  return studentsSource
+    .slice()
+    .filter((student) => student.group_id === groupId);
+}
+export function fetchStudentsWithGroup(): StudentWithGroup[] {
+  return studentsWithGroupsSource.slice();
+}
+
+export function fetchStudentsWithGroupByGroupId(
+  groupId: number
+): StudentWithGroup[] {
+  return studentsWithGroupsSource
+    .slice()
+    .filter((student) => student.group.id === groupId);
+}
+
+export function fetchSessionsCountByStudentId(studentId: number): number {
+  return 2;
+}

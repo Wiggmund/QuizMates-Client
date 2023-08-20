@@ -7,7 +7,12 @@ import {
   StudentsTable,
 } from "../../components";
 import { Box, Grid, Typography, styled } from "@mui/material";
-import { groupSource, hostsSource, studentsSource } from "../../data";
+import {
+  fetchStudentsWithGroup,
+  groupSource,
+  hostsSource,
+  studentsSource,
+} from "../../data";
 
 const SimpleContainer = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -22,6 +27,7 @@ const Home = (props: Props) => {
   const studentsAmount = studentsSource.length;
   const groupsAmount = groupSource.length;
   const hostsAmount = hostsSource.length;
+  const studentsWithGroups = fetchStudentsWithGroup();
 
   return (
     <Container maxWidth="lg">
@@ -60,7 +66,7 @@ const Home = (props: Props) => {
               {studentsAmount}
             </Typography>
           </SimpleContainer>
-          <StudentsTable />
+          <StudentsTable students={studentsWithGroups} />
         </Grid>
       </Grid>
     </Container>

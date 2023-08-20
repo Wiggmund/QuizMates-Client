@@ -11,12 +11,13 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
+import { Student, StudentWithGroup } from "../../model";
 
-type Props = {};
+type Props = {
+  students: StudentWithGroup[];
+};
 
-const StudentsTable = (props: Props) => {
-  const students = studentsWithGroupsSource.slice(0);
-
+const StudentsTable = ({ students }: Props) => {
   const studentsRowHeaders = (
     <TableRow>
       <TableCell align="left">Student ID</TableCell>
