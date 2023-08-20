@@ -55,13 +55,6 @@ export const groupSource: Group[] = [
     studentsCount: studentsSource.filter((student) => student.group_id === 2)
       .length,
   },
-  {
-    id: 3,
-    name: "Default",
-    teamLead: -1,
-    studentsCount: studentsSource.filter((student) => student.group_id === 3)
-      .length,
-  },
 ];
 
 groupSource.forEach((group) => {
