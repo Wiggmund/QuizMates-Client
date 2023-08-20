@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import {
   GroupPage,
   HomePage,
+  HostPage,
   SessionPage,
   SessionsPage,
   StudentPage,
@@ -27,5 +28,9 @@ export const rootRouter = createBrowserRouter([
   {
     path: "/groups/:groupId",
     element: <GroupPage />,
+  },
+  {
+    path: "/hosts/:hostId",
+    element: <HostPage />,
   },
 ]);

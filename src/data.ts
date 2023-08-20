@@ -130,6 +130,7 @@ export const sessionsSource = sessionTitlesDescriptions.map((item, index) => {
   } as Session;
 });
 
+// GROUPS
 export function fetchGroupByTeamLeadId(teamLeadId: number): Group | undefined {
   return groupSource.slice().find((group) => group.teamLead === teamLeadId);
 }
@@ -138,6 +139,11 @@ export function fetchGroupById(groupId: number): Group | undefined {
   return groupSource.slice().find((group) => group.id === groupId);
 }
 
+export function fetchAllGroups(): Group[] {
+  return groupSource.slice();
+}
+
+// STUDENTS
 export function fetchStudentById(studentId: number): Student | undefined {
   return studentsSource.slice().find((student) => student.id === studentId);
 }
@@ -163,10 +169,28 @@ export function fetchAllStudents(): Student[] {
   return studentsSource.slice();
 }
 
-export function fetchAllGroups(): Group[] {
-  return groupSource.slice();
-}
-
+// SESSIONS
 export function fetchSessionsCountByStudentId(studentId: number): number {
   return 2;
+}
+
+export function fetchSessionsByHostId(hostId: number): Session[] {
+  return sessionsSource.slice().filter((session) => session.host === hostId);
+}
+
+export function fetchAllSessions(): Session[] {
+  return sessionsSource.slice();
+}
+
+export function fetchSessionById(sessionId: number): Session | undefined {
+  return sessionsSource.slice().find((session) => session.id === sessionId);
+}
+
+//HOSTS
+export function fetchAllHosts(): Host[] {
+  return hostsSource.slice();
+}
+
+export function fetchHostById(hostId: number): Host | undefined {
+  return hostsSource.slice().find((host) => host.id === hostId);
 }

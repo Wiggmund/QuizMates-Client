@@ -1,5 +1,10 @@
 import React from "react";
-import { hostsSource, sessionsSource } from "../../data";
+import {
+  fetchAllHosts,
+  fetchHostById,
+  hostsSource,
+  sessionsSource,
+} from "../../data";
 import {
   Paper,
   Table,
@@ -11,12 +16,14 @@ import {
 } from "@mui/material";
 import { Endpoints } from "../../constants";
 import { Link } from "react-router-dom";
+import { Session } from "../../model";
 
-type Props = {};
+type Props = {
+  sessions: Session[];
+};
 
-const SessionsTable = (props: Props) => {
-  const sessions = sessionsSource.slice();
-  const hosts = hostsSource.slice();
+const SessionsTable = ({ sessions }: Props) => {
+  const hosts = fetchAllHosts();
 
   const sessionsRowHeaders = (
     <TableRow>
@@ -29,7 +36,7 @@ const SessionsTable = (props: Props) => {
   );
 
   const sessionsRows = sessions.map((session) => {
-    const host = hosts.find((h) => h.id === session.host);
+    const host = fetchHostById(session.host);
     const hostFullName = host
       ? `${host.firstName} ${host.lastName}`
       : "unknown";
@@ -50,7 +57,12 @@ const SessionsTable = (props: Props) => {
             {session.title}
           </Link>
         </TableCell>
-        <TableCell align="left">{hostFullName}</TableCell>
+        <TableCell align="left">
+          {host && (
+            <Link to={`${Endpoints.hostPage}/${host.id}`}>{hostFullName}</Link>
+          )}
+          {host === undefined && "unknown"}
+        </TableCell>
         <TableCell align="left">{formattedDate}</TableCell>
       </TableRow>
     );

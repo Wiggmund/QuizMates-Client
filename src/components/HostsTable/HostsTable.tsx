@@ -1,5 +1,5 @@
 import React from "react";
-import { hostsSource } from "../../data";
+import { fetchAllHosts, hostsSource } from "../../data";
 import {
   Paper,
   Table,
@@ -9,11 +9,14 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import { Link } from "react-router-dom";
+import { Endpoints } from "../../constants";
+import { getFullName } from "../../utils";
 
 type Props = {};
 
 const HostsTable = (props: Props) => {
-  const hosts = hostsSource.slice();
+  const hosts = fetchAllHosts();
 
   const hostsRowsHeaders = (
     <TableRow>
@@ -30,7 +33,7 @@ const HostsTable = (props: Props) => {
     >
       <TableCell align="left">{host.id}</TableCell>
       <TableCell component="th" scope="row">
-        {`${host.firstName} ${host.lastName}`}
+        <Link to={`${Endpoints.hostPage}/${host.id}`}>{getFullName(host)}</Link>
       </TableCell>
     </TableRow>
   ));

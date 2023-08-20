@@ -38,7 +38,14 @@ const StudentsTable = ({ students }: Props) => {
           {`${student.firstName} ${student.lastName}`}
         </Link>
       </TableCell>
-      <TableCell align="left">{student.group.name}</TableCell>
+      <TableCell align="left">
+        {student.group && (
+          <Link to={`${Endpoints.groupPage}/${student.group.id}`}>
+            {student.group.name}
+          </Link>
+        )}
+        {student.group === undefined && "unknown"}
+      </TableCell>
     </TableRow>
   ));
 

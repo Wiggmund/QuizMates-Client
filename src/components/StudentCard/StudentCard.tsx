@@ -1,7 +1,7 @@
 import { Student, StudentWithGroup } from "../../model";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   fetchGroupById,
   fetchGroupByTeamLeadId,
@@ -14,6 +14,7 @@ import {
 import { getFullName } from "../../utils";
 import { Box, Paper, Stack } from "@mui/material";
 import StudentsTable from "../StudentsTable/StudentsTable";
+import { Endpoints } from "../../constants";
 
 type StudentUrlParams = {
   studentId: string;
@@ -37,7 +38,8 @@ const StudentCard = (props: StudentProps) => {
   }
 
   const studentFullName = getFullName(student);
-  const groupName = fetchGroupById(student.group_id)?.name || "unknown";
+  const studentGroup = fetchGroupById(student.group_id);
+  const groupName = studentGroup ? studentGroup.name : "unknown";
   const sessionsCount = fetchSessionsCountByStudentId(student.id);
   const teamLeadTitle = "TEAMLEAD";
 
@@ -62,7 +64,12 @@ const StudentCard = (props: StudentProps) => {
           Group
         </Typography>
         <Typography variant="h6" sx={{ fontWeight: "bold" }} color="initial">
-          {groupName}
+          {studentGroup && (
+            <Link to={`${Endpoints.groupPage}/${studentGroup.id}`}>
+              {studentGroup.name}
+            </Link>
+          )}
+          {studentGroup === undefined && groupName}
         </Typography>
       </Stack>
 
@@ -89,9 +96,9 @@ const StudentCard = (props: StudentProps) => {
 
     teamLeadBlock = (
       <Stack spacing={2}>
-        <Typography variant="h5" color="initial">
+        <Typography variant="subtitle1" color="initial">
           {studentFullName} is a teamlead of {groupName} and manages next
-          students
+          students:
         </Typography>
         <StudentsTable students={students} />
       </Stack>

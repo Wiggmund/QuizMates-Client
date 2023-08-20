@@ -8,6 +8,8 @@ import { Group } from "../../model";
 import { Stack, Typography } from "@mui/material";
 import { getFullName } from "../../utils";
 import StudentsTable from "../StudentsTable/StudentsTable";
+import { Link } from "react-router-dom";
+import { Endpoints } from "../../constants";
 
 type Props = {
   group: Group;
@@ -30,7 +32,12 @@ const GroupCard = ({ group }: Props) => {
           TeamLead
         </Typography>
         <Typography variant="h6" sx={{ fontWeight: "bold" }} color="initial">
-          {teamLeadFullName}
+          {teamLead && (
+            <Link to={`${Endpoints.studentPage}/${teamLead.id}`}>
+              {teamLeadFullName}
+            </Link>
+          )}
+          {teamLead === undefined && teamLeadFullName}
         </Typography>
       </Stack>
 

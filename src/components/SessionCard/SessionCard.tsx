@@ -1,50 +1,30 @@
 import React from "react";
 import { Session, SessionStatus } from "../../model";
 import { Box, Stack, Typography, Button, Paper } from "@mui/material";
-import { CircleRounded } from "@mui/icons-material";
 import {
+  fetchGroupById,
+  fetchHostById,
+  fetchStudentById,
   groupSource,
   hostsSource,
-  sessionsSource,
   studentsSource,
 } from "../../data";
 import { green, grey } from "@mui/material/colors";
-import { useParams } from "react-router-dom";
-
-type SessionUrlParams = {
-  sessionId: string;
-};
+import { Link } from "react-router-dom";
+import { Endpoints } from "../../constants";
 
 interface SessionMarkerMap {
   [key: string]: string;
 }
 
-type Props = {};
+type Props = {
+  session: Session;
+};
 
-const SessionCard = (props: Props) => {
-  const sessions = sessionsSource.slice();
-  const sessionId = Number.parseInt(
-    useParams<SessionUrlParams>().sessionId as string
-  );
-  console.log(sessionId);
-  const session = sessions.find((st) => st.id === sessionId);
-
-  if (!session) {
-    return (
-      <Typography variant="h1" color="error">
-        Session with {sessionId} NOT FOUND
-      </Typography>
-    );
-  }
-
-  const bestStudent = studentsSource
-    .slice()
-    .find((st) => st.id === session.bestStudent);
-  const bestGroup = groupSource
-    .slice()
-    .find((gr) => gr.id === session.bestGroup);
-
-  const host = hostsSource.slice().find((h) => h.id === session.host);
+const SessionCard = ({ session }: Props) => {
+  const bestStudent = fetchStudentById(session.bestStudent);
+  const bestGroup = fetchGroupById(session.bestGroup);
+  const host = fetchHostById(session.host);
 
   const markerMap: SessionMarkerMap = {
     [SessionStatus.finished]: grey[500],
@@ -92,7 +72,10 @@ const SessionCard = (props: Props) => {
           Host
         </Typography>
         <Typography variant="body1" color="primary">
-          {hostFullName}
+          {host && (
+            <Link to={`${Endpoints.hostPage}/${host.id}`}>{hostFullName}</Link>
+          )}
+          {host === undefined && hostFullName}
         </Typography>
       </Stack>
 
@@ -110,7 +93,12 @@ const SessionCard = (props: Props) => {
           Best student:
         </Typography>
         <Typography variant="body1" color="initial">
-          {bestStudentFullName}
+          {bestStudent && (
+            <Link to={`${Endpoints.studentPage}/${bestStudent.id}`}>
+              {bestStudentFullName}
+            </Link>
+          )}
+          {bestStudent === undefined && bestStudentFullName}
         </Typography>
       </Stack>
 
@@ -119,7 +107,12 @@ const SessionCard = (props: Props) => {
           Best group:
         </Typography>
         <Typography variant="body1" color="initial">
-          {bestGroupName}
+          {bestGroup && (
+            <Link to={`${Endpoints.groupPage}/${bestGroup.id}`}>
+              {bestGroupName}
+            </Link>
+          )}
+          {bestGroup === undefined && bestGroupName}
         </Typography>
       </Stack>
     </Stack>
