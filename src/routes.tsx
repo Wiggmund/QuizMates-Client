@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import { HomePage, SessionsPage } from "./pages";
+import { HomePage, SessionPage, SessionsPage, StudentPage } from "./pages";
 
 export const rootRouter = createBrowserRouter([
   {
@@ -11,7 +11,11 @@ export const rootRouter = createBrowserRouter([
     element: <SessionsPage />,
   },
   {
+    path: "/sessions/:sessionId",
+    element: <SessionPage />,
+  },
+  {
     path: "/students/:studentId",
-    element: <div>Student page</div>,
+    element: <StudentPage />,
   },
 ]);

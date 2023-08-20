@@ -1,12 +1,31 @@
 import { Student } from "../../model";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import { useParams } from "react-router-dom";
+import { studentsSource } from "../../data";
+import { __String } from "typescript";
 
-type StudentProps = {
-  student: Student;
+type StudentUrlParams = {
+  studentId: string;
 };
 
-const StudentCard = ({ student }: StudentProps) => {
+type StudentProps = {};
+
+const StudentCard = (props: StudentProps) => {
+  const students = studentsSource.slice();
+  let studentId = Number.parseInt(
+    useParams<StudentUrlParams>().studentId as string
+  );
+  const student = students.find((st) => st.id === studentId);
+
+  if (!student) {
+    return (
+      <Typography variant="h1" color="error">
+        Student with {studentId} NOT FOUND
+      </Typography>
+    );
+  }
+
   return (
     <Container maxWidth="lg">
       <Typography variant="h6" color="primary">

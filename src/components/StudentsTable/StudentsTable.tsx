@@ -9,6 +9,8 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import { Link } from "react-router-dom";
+import { Endpoints } from "../../constants";
 
 type Props = {};
 
@@ -30,10 +32,11 @@ const StudentsTable = (props: Props) => {
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
       <TableCell align="left">{student.id}</TableCell>
-      <TableCell
-        component="th"
-        scope="row"
-      >{`${student.firstName} ${student.lastName}`}</TableCell>
+      <TableCell component="th" scope="row">
+        <Link to={`${Endpoints.studentPage}/${student.id}`}>
+          {`${student.firstName} ${student.lastName}`}
+        </Link>
+      </TableCell>
       <TableCell align="left">{student.group.name}</TableCell>
     </TableRow>
   ));
