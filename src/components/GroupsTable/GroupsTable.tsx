@@ -1,5 +1,10 @@
 import React from "react";
-import { groupSource, studentsSource } from "../../data";
+import {
+  fetchAllGroups,
+  fetchAllStudents,
+  groupSource,
+  studentsSource,
+} from "../../data";
 import {
   Paper,
   Table,
@@ -10,12 +15,14 @@ import {
   TableRow,
 } from "@mui/material";
 import { StudentsMap } from "../../model/Student";
+import { Link } from "react-router-dom";
+import { Endpoints } from "../../constants";
 
 type Props = {};
 
 const GroupsTable = (props: Props) => {
-  const groups = groupSource.slice();
-  const students = studentsSource.slice();
+  const groups = fetchAllGroups();
+  const students = fetchAllStudents();
   const studentsMap: StudentsMap = {};
   students.forEach((st) => {
     studentsMap[st.id] = st;
@@ -32,10 +39,9 @@ const GroupsTable = (props: Props) => {
 
   const groupsRows = groups.map((group) => {
     const teamLead = studentsMap[group.teamLead];
-    const fullName = teamLead
+    const teamleadFullName = teamLead
       ? `${teamLead.firstName} ${teamLead.lastName}`
       : "unknown";
-
     return (
       <TableRow
         hover
@@ -44,9 +50,16 @@ const GroupsTable = (props: Props) => {
       >
         <TableCell align="left">{group.id}</TableCell>
         <TableCell component="th" scope="row">
-          {group.name}
+          <Link to={`${Endpoints.groupPage}/${group.id}`}>{group.name}</Link>
         </TableCell>
-        <TableCell align="left">{fullName}</TableCell>
+        <TableCell align="left">
+          {teamLead && (
+            <Link to={`${Endpoints.studentPage}/${teamLead.id}`}>
+              {teamleadFullName}
+            </Link>
+          )}
+          {teamLead === undefined && teamleadFullName}
+        </TableCell>
         <TableCell align="left">{group.studentsCount}</TableCell>
       </TableRow>
     );

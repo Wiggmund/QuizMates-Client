@@ -5,3 +5,4 @@ export { default as AppBar } from "./AppBar/AppBar";
 export { default as SessionCard } from "./SessionCard/SessionCard";
 export { default as StudentCard } from "./StudentCard/StudentCard";
 export { default as SessionsTable } from "./SessionsTable/SessionsTable";
+export { default as GroupCard } from "./GroupCard/GroupCard";

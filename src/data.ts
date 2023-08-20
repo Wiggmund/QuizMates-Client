@@ -159,6 +159,14 @@ export function fetchStudentsWithGroupByGroupId(
     .filter((student) => student.group.id === groupId);
 }
 
+export function fetchAllStudents(): Student[] {
+  return studentsSource.slice();
+}
+
+export function fetchAllGroups(): Group[] {
+  return groupSource.slice();
+}
+
 export function fetchSessionsCountByStudentId(studentId: number): number {
   return 2;
 }

@@ -1,5 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
-import { HomePage, SessionPage, SessionsPage, StudentPage } from "./pages";
+import {
+  GroupPage,
+  HomePage,
+  SessionPage,
+  SessionsPage,
+  StudentPage,
+} from "./pages";
 
 export const rootRouter = createBrowserRouter([
   {
@@ -17,5 +23,9 @@ export const rootRouter = createBrowserRouter([
   {
     path: "/students/:studentId",
     element: <StudentPage />,
+  },
+  {
+    path: "/groups/:groupId",
+    element: <GroupPage />,
   },
 ]);
