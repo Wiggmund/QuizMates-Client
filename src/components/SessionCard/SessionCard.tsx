@@ -1,14 +1,7 @@
 import React from "react";
 import { Session, SessionStatus } from "../../model";
-import { Box, Stack, Typography, Button, Paper } from "@mui/material";
-import {
-  fetchGroupById,
-  fetchHostById,
-  fetchStudentById,
-  groupSource,
-  hostsSource,
-  studentsSource,
-} from "../../data";
+import { Stack, Typography } from "@mui/material";
+import { fetchGroupById, fetchHostById, fetchStudentById } from "../../data";
 import { green, grey } from "@mui/material/colors";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";

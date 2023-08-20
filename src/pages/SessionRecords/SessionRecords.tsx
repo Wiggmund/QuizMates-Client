@@ -1,7 +1,7 @@
 import React from "react";
 import Container from "@mui/material/Container";
 import { AppBar, SessionRecordAccordion } from "../../components";
-import { fetchAllSessions, fetchAllStudents } from "../../data";
+import { fetchAllSessions } from "../../data";
 
 type Props = {};
 

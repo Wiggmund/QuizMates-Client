@@ -1,5 +1,4 @@
 import React from "react";
-import { studentsWithGroupsSource } from "../../data";
 import {
   Paper,
   Table,
@@ -11,7 +10,7 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
-import { Student, StudentWithGroup } from "../../model";
+import { StudentWithGroup } from "../../model";
 
 type Props = {
   students: StudentWithGroup[];

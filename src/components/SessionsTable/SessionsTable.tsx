@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  fetchAllHosts,
-  fetchHostById,
-  hostsSource,
-  sessionsSource,
-} from "../../data";
+import { fetchAllHosts, fetchHostById } from "../../data";
 import {
   Paper,
   Table,

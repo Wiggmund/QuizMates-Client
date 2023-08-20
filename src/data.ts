@@ -3,7 +3,6 @@ import {
   Host,
   Session,
   SessionRecord,
-  SessionStatus,
   Student,
   StudentWithGroup,
 } from "./model";
@@ -216,6 +215,17 @@ export function fetchSessionById(sessionId: number): Session | undefined {
   return sessionsSource.slice().find((session) => session.id === sessionId);
 }
 
+export function fetchSessionsByStudentId(studentId: number): Session[] {
+  const result: Session[] = [];
+  new Set(
+    fetchSessionRecordsByStudentId(studentId).map((record) => record.sessionId)
+  ).forEach((key) => {
+    const candidate = sessionsSource.find((s) => s.id === key);
+    if (candidate) result.push(candidate);
+  });
+  return result;
+}
+
 //HOSTS
 export function fetchAllHosts(): Host[] {
   return hostsSource.slice();
@@ -240,4 +250,12 @@ export function fetchSessionRecordsBySessionAndStudent(
       (record) =>
         record.sessionId === sessionId && record.studentId === studentId
     );
+}
+
+export function fetchSessionRecordsByStudentId(
+  studentId: number
+): SessionRecord[] {
+  return sessionRecordsSource.filter(
+    (record) => record.studentId === studentId
+  );
 }

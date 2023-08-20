@@ -1,9 +1,9 @@
 import React from "react";
 import Container from "@mui/material/Container";
-import { AppBar, SessionCard } from "../../components";
+import { AppBar, SessionCard, SessionRecordAccordion } from "../../components";
 import { useParams } from "react-router-dom";
 import { fetchSessionById } from "../../data";
-import { Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 
 type SessionUrlParams = {
   sessionId: string;
@@ -29,6 +29,12 @@ const Session = (props: Props) => {
     <Container maxWidth="lg">
       <AppBar />
       <SessionCard session={session} />
+      <Stack spacing={2}>
+        <Typography variant="subtitle1" color="initial">
+          Session details:
+        </Typography>
+        <SessionRecordAccordion session={session} />
+      </Stack>
     </Container>
   );
 };

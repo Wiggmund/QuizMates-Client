@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  fetchStudentById,
-  fetchStudentsByGroup,
-  fetchStudentsWithGroupByGroupId,
-} from "../../data";
+import { fetchStudentById, fetchStudentsWithGroupByGroupId } from "../../data";
 import { Group } from "../../model";
 import { Stack, Typography } from "@mui/material";
 import { getFullName } from "../../utils";

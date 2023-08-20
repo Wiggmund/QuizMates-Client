@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  fetchAllGroups,
-  fetchAllStudents,
-  groupSource,
-  studentsSource,
-} from "../../data";
+import { fetchAllGroups, fetchAllStudents } from "../../data";
 import {
   Paper,
   Table,

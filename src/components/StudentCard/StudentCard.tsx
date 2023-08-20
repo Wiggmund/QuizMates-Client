@@ -1,20 +1,19 @@
-import { Student, StudentWithGroup } from "../../model";
+import { StudentWithGroup } from "../../model";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { Link, useParams } from "react-router-dom";
 import {
   fetchGroupById,
   fetchGroupByTeamLeadId,
-  fetchSessionsCountByStudentId,
+  fetchSessionsByStudentId,
   fetchStudentById,
-  fetchStudentsByGroup,
   fetchStudentsWithGroupByGroupId,
-  studentsSource,
 } from "../../data";
 import { getFullName } from "../../utils";
-import { Box, Paper, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import StudentsTable from "../StudentsTable/StudentsTable";
 import { Endpoints } from "../../constants";
+import SessionsTable from "../SessionsTable/SessionsTable";
 
 type StudentUrlParams = {
   studentId: string;
@@ -23,7 +22,6 @@ type StudentUrlParams = {
 type StudentProps = {};
 
 const StudentCard = (props: StudentProps) => {
-  const students = studentsSource.slice();
   let studentId = Number.parseInt(
     useParams<StudentUrlParams>().studentId as string
   );
@@ -37,10 +35,11 @@ const StudentCard = (props: StudentProps) => {
     );
   }
 
+  const sessions = fetchSessionsByStudentId(studentId);
   const studentFullName = getFullName(student);
   const studentGroup = fetchGroupById(student.group_id);
   const groupName = studentGroup ? studentGroup.name : "unknown";
-  const sessionsCount = fetchSessionsCountByStudentId(student.id);
+  const sessionsCount = sessions.length;
   const teamLeadTitle = "TEAMLEAD";
 
   const infoBlock = (
@@ -112,6 +111,12 @@ const StudentCard = (props: StudentProps) => {
       </Typography>
       {infoBlock}
       {teamLeadBlock}
+      <Stack spacing={2} sx={{ py: 4 }}>
+        <Typography variant="subtitle1" color="initial">
+          Passed sessions:
+        </Typography>
+        <SessionsTable sessions={sessions} />
+      </Stack>
     </Container>
   );
 };
