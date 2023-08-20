@@ -4,6 +4,7 @@ import {
   HomePage,
   HostPage,
   SessionPage,
+  SessionRecordsPage,
   SessionsPage,
   StudentPage,
 } from "./pages";
@@ -32,5 +33,9 @@ export const rootRouter = createBrowserRouter([
   {
     path: "/hosts/:hostId",
     element: <HostPage />,
+  },
+  {
+    path: "/sessionRecords",
+    element: <SessionRecordsPage />,
   },
 ]);

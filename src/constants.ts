@@ -4,4 +4,5 @@ export const Endpoints = {
   studentPage: "/students",
   groupPage: "/groups",
   hostPage: "/hosts",
+  sessionRecordsPage: "/sessionRecords",
 };

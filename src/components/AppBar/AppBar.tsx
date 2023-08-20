@@ -24,7 +24,7 @@ const AppBar = (props: Props) => {
         <Link to={Endpoints.sessionsPage}>
           <Button key="sessions">Sessions</Button>
         </Link>
-        <Link to={Endpoints.homePage}>
+        <Link to={Endpoints.sessionRecordsPage}>
           <Button key="scores">Scores</Button>
         </Link>
         <Link to={Endpoints.homePage}>

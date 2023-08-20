@@ -2,10 +2,12 @@ import {
   Group,
   Host,
   Session,
+  SessionRecord,
   SessionStatus,
   Student,
   StudentWithGroup,
 } from "./model";
+import { getFullName } from "./utils";
 
 export const studentsSource: Student[] = [
   {
@@ -130,6 +132,41 @@ export const sessionsSource = sessionTitlesDescriptions.map((item, index) => {
   } as Session;
 });
 
+const sessionRecordsSource: SessionRecord[] = [];
+const questionsPerSession = 3;
+let idCounter = 1;
+const actions: ["ask", "answer"] = ["ask", "answer"];
+studentsSource.forEach((student, index) => {
+  const opponentId =
+    studentsSource[studentsSource.length - 1]?.id === student.id
+      ? 1
+      : student.id + 1;
+
+  sessionsSource.forEach((session) => {
+    actions.forEach((action) => {
+      for (let i = 0; i < questionsPerSession; i++) {
+        const record: SessionRecord = {
+          id: idCounter++,
+          sessionId: session.id,
+          studentId: student.id,
+          hostId: hostsSource[0].id || 1,
+          score: Math.random() > 0.5 ? 1 : 0,
+          hostNotes: Math.random() > 0.5 ? "Some note" : undefined,
+          wasPresent: true,
+          opponentId,
+          action,
+          question:
+            action === "ask"
+              ? `${getFullName(student)} ASK`
+              : `${getFullName(student)} ANSWER`,
+        };
+
+        sessionRecordsSource.push(record);
+      }
+    });
+  });
+});
+
 // GROUPS
 export function fetchGroupByTeamLeadId(teamLeadId: number): Group | undefined {
   return groupSource.slice().find((group) => group.teamLead === teamLeadId);
@@ -193,4 +230,21 @@ export function fetchAllHosts(): Host[] {
 
 export function fetchHostById(hostId: number): Host | undefined {
   return hostsSource.slice().find((host) => host.id === hostId);
+}
+
+// SessionRecords
+export function fetchAllSessionRecords(): SessionRecord[] {
+  return sessionRecordsSource.slice();
+}
+
+export function fetchSessionRecordsBySessionAndStudent(
+  sessionId: number,
+  studentId: number
+): SessionRecord[] {
+  return sessionRecordsSource
+    .slice()
+    .filter(
+      (record) =>
+        record.sessionId === sessionId && record.studentId === studentId
+    );
 }

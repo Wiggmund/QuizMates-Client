@@ -7,3 +7,4 @@ export { default as StudentCard } from "./StudentCard/StudentCard";
 export { default as SessionsTable } from "./SessionsTable/SessionsTable";
 export { default as GroupCard } from "./GroupCard/GroupCard";
 export { default as HostCard } from "./HostCard/HostCard";
+export { default as SessionRecordAccordion } from "./SessionRecordAccordion/SessionRecordAccordion";
