@@ -5,4 +5,5 @@ export const Endpoints = {
   groupPage: "/groups",
   hostPage: "/hosts",
   sessionRecordsPage: "/sessionRecords",
+  quizPage: "/quiz",
 };

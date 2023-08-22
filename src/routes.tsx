@@ -3,6 +3,7 @@ import {
   GroupPage,
   HomePage,
   HostPage,
+  QuizPage,
   SessionPage,
   SessionRecordsPage,
   SessionsPage,
@@ -37,5 +38,9 @@ export const rootRouter = createBrowserRouter([
   {
     path: "/sessionRecords",
     element: <SessionRecordsPage />,
+  },
+  {
+    path: "/quiz",
+    element: <QuizPage />,
   },
 ]);

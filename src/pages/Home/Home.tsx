@@ -6,13 +6,15 @@ import {
   HostsTable,
   StudentsTable,
 } from "../../components";
-import { Box, Grid, Typography, styled } from "@mui/material";
+import { Box, Grid, Typography, styled, Button } from "@mui/material";
 import {
   fetchStudentsWithGroup,
   groupSource,
   hostsSource,
   studentsSource,
 } from "../../data";
+import { Link } from "react-router-dom";
+import { Endpoints } from "../../constants";
 
 const SimpleContainer = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -34,6 +36,18 @@ const Home = (props: Props) => {
       <Grid container rowGap={4}>
         <Grid xs={12}>
           <AppBar />
+        </Grid>
+        <Grid xs={12}>
+          <Link to={`${Endpoints.quizPage}`}>
+            <Button
+              variant="contained"
+              color="secondary"
+              fullWidth
+              size="large"
+            >
+              Start Session
+            </Button>
+          </Link>
         </Grid>
         <Grid xs={12}>
           <SimpleContainer>

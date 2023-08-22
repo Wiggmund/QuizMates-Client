@@ -1,8 +1,10 @@
 import {
   Group,
   Host,
+  Pair,
   Session,
   SessionRecord,
+  SessionStatus,
   Student,
   StudentWithGroup,
 } from "./model";
@@ -56,19 +58,26 @@ export const groupSource: Group[] = [
   },
 ];
 
-groupSource.forEach((group) => {
-  if (group.teamLead !== -1) {
-    const student = studentsSource.find((st) => st.id === group.teamLead);
-
-    if (student) student.isTeamLead = true;
-  }
-});
+export const pairsSource: Pair[] = [
+  {
+    id: 1,
+    student: 1,
+    opponent: 3,
+  },
+  {
+    id: 1,
+    student: 2,
+    opponent: 4,
+  },
+];
 
 export const studentsWithGroupsSource: StudentWithGroup[] = studentsSource.map(
   (student) => {
-    const group =
-      groupSource.find((group) => student.group_id == group.id) ||
-      groupSource[3];
+    const group = groupSource.find((group) => student.group_id == group.id);
+
+    if (!group) {
+      throw new Error("Group not found for student:" + student.id);
+    }
 
     return {
       ...student,
@@ -85,49 +94,57 @@ export const hostsSource: Host[] = [
   },
 ];
 
-type SessionTitleDescription = Pick<Session, "title"> &
-  Pick<Session, "description">;
-
-const studentsIds = studentsSource.map((st) => st.id);
-const groupsIds = groupSource.map((group) => group.id);
-const statusVariants = ["active", "finished"];
-
-const randIndex = (arr: any[]) => {
-  return arr[Math.trunc(Math.random() * arr.length)];
-};
-
-const sessionTitlesDescriptions: SessionTitleDescription[] = [
-  {
-    title: "Patterns",
-    description: "Learning all 25 patterns",
-  },
-  {
-    title: "Collections",
-    description: "Main Collection Framework interfaces",
-  },
-  {
-    title: "Hash table",
-    description: "Map internals",
-  },
-];
-
-export const sessionsSource = sessionTitlesDescriptions.map((item, index) => {
+function createSession(
+  id: number,
+  title: string,
+  description: string,
+  host: number,
+  date: Date,
+  bestStudent: number,
+  bestGroup: number,
+  status: "active" | "finished"
+): Session {
   return {
-    id: index + 1,
-    title: item.title,
-    description: item.description,
-    host: 1,
-    date: new Date(),
-    bestStudent: randIndex(studentsIds),
-    bestGroup: randIndex(groupsIds),
-    status: randIndex(statusVariants),
-  } as Session;
-});
+    id,
+    title,
+    description,
+    host,
+    date,
+    bestStudent,
+    bestGroup,
+    status,
+  };
+}
+
+export const sessionsSource = [
+  createSession(
+    1,
+    "Patterns",
+    "Learning all 25 patterns",
+    1,
+    new Date(),
+    1,
+    1,
+    "finished"
+  ),
+  createSession(
+    2,
+    "Collections",
+    "Collection framework Deep learning",
+    1,
+    new Date(),
+    3,
+    2,
+    "finished"
+  ),
+  createSession(3, "Map", "Map internals", 1, new Date(), 2, 2, "finished"),
+];
 
 const sessionRecordsSource: SessionRecord[] = [];
 const questionsPerSession = 3;
 let idCounter = 1;
 const actions: ["ask", "answer"] = ["ask", "answer"];
+
 studentsSource.forEach((student, index) => {
   const opponentId =
     studentsSource[studentsSource.length - 1]?.id === student.id
@@ -141,9 +158,9 @@ studentsSource.forEach((student, index) => {
           id: idCounter++,
           sessionId: session.id,
           studentId: student.id,
-          hostId: hostsSource[0].id || 1,
-          score: Math.random() > 0.5 ? 1 : 0,
-          hostNotes: Math.random() > 0.5 ? "Some note" : undefined,
+          hostId: 1,
+          score: i % 2 === 0 ? 1 : 0,
+          hostNotes: i % 2 === 0 ? "Some note" : undefined,
           wasPresent: true,
           opponentId,
           action,
@@ -196,6 +213,15 @@ export function fetchStudentsWithGroupByGroupId(
 
 export function fetchAllStudents(): Student[] {
   return studentsSource.slice();
+}
+
+export function fetchStudentsByGroupIds(groupIds: number[]): Student[] {
+  const result: Student[] = [];
+  groupIds.forEach((groupId) => {
+    const students = fetchStudentsByGroup(groupId);
+    students.forEach((st) => result.push(st));
+  });
+  return result;
 }
 
 // SESSIONS
@@ -258,4 +284,32 @@ export function fetchSessionRecordsByStudentId(
   return sessionRecordsSource.filter(
     (record) => record.studentId === studentId
   );
+}
+
+// START SESSION
+export function generateGroups(
+  groups: Group[],
+  absentStudents: Student[]
+): Pair[] {
+  return pairsSource.slice();
+}
+
+export function addSessionRecord(record: SessionRecord): void {
+  sessionRecordsSource.push(record);
+}
+
+export function addSession(session: Session): void {
+  sessionsSource.push(session);
+}
+
+export function startSession(sessionId: number): void {
+  const candidate = sessionsSource.find((s) => s.id === sessionId);
+  if (!candidate) throw new Error(`Session with id [${sessionId}] not found`);
+  candidate.status = SessionStatus.active;
+}
+
+export function closeSession(sessionId: number) {
+  const candidate = sessionsSource.find((s) => s.id === sessionId);
+  if (!candidate) throw new Error(`Session with id [${sessionId}] not found`);
+  candidate.status = SessionStatus.finished;
 }

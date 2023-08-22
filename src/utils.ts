@@ -1,6 +1,6 @@
 type NamedEntity = {
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
 };
 export const getFullName = (target: NamedEntity) => {
   const doHaveFirstName = !target.firstName;

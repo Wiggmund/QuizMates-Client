@@ -1,9 +1,11 @@
 export const SessionStatus: {
   finished: any;
   active: any;
+  idle: any;
 } = {
   finished: "finished",
   active: "active",
+  idle: "idle",
 };
 
 export interface Session {
