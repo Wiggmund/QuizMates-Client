@@ -65,7 +65,7 @@ export const pairsSource: Pair[] = [
     opponent: 3,
   },
   {
-    id: 1,
+    id: 2,
     student: 2,
     opponent: 4,
   },
@@ -224,6 +224,12 @@ export function fetchStudentsByGroupIds(groupIds: number[]): Student[] {
   return result;
 }
 
+export function fetchStudentsByIds(studentsIds: number[]): Student[] {
+  return studentsSource.filter(
+    (st) => studentsIds.find((id) => st.id === id) !== undefined
+  );
+}
+
 // SESSIONS
 export function fetchSessionsCountByStudentId(studentId: number): number {
   return 2;
@@ -287,10 +293,7 @@ export function fetchSessionRecordsByStudentId(
 }
 
 // START SESSION
-export function generateGroups(
-  groups: Group[],
-  absentStudents: Student[]
-): Pair[] {
+export function fetchPairs(groups: Group[], absentStudents: Student[]): Pair[] {
   return pairsSource.slice();
 }
 

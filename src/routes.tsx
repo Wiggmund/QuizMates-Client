@@ -9,6 +9,7 @@ import {
   SessionsPage,
   StudentPage,
 } from "./pages";
+import QuizGame from "./pages/QuizGame/QuizGame";
 
 export const rootRouter = createBrowserRouter([
   {
@@ -42,5 +43,9 @@ export const rootRouter = createBrowserRouter([
   {
     path: "/quiz",
     element: <QuizPage />,
+  },
+  {
+    path: "/quizgame",
+    element: <QuizGame />,
   },
 ]);
