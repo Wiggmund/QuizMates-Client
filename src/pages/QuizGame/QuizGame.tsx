@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import Container from "@mui/material/Container";
-import { AppBar } from "../../components";
 import { fetchPairs, fetchStudentById, fetchStudentsByIds } from "../../data";
 import {
   Paper,
@@ -9,21 +8,40 @@ import {
   Button,
   SxProps,
   Theme,
-  ButtonGroup,
   TextField,
+  Chip,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2"; // Grid version 2
 import PersonIcon from "@mui/icons-material/Person";
 import { getFullName } from "../../utils";
-import { Pair, Student } from "../../model";
-import { blue } from "@mui/material/colors";
+import {
+  CreateSessionRecordDto,
+  Pair,
+  SessionRecord,
+  Student,
+} from "../../model";
+import { blue, red } from "@mui/material/colors";
+
+// private Long sessionId;
+// private Long pairId;
+// private Long studentId;
+// private Long hostId;
+// private Double score;
+// private String hostNotes;
+// private Boolean wasPresent;
 
 type PairCardProps = {
   studentId: number;
   opponentId: number;
   current: boolean;
+  passed: boolean;
 };
-const PairCard = ({ studentId, opponentId, current }: PairCardProps) => {
+const PairCard = ({
+  studentId,
+  opponentId,
+  current,
+  passed,
+}: PairCardProps) => {
   const student = fetchStudentById(studentId);
   const opponent = fetchStudentById(opponentId);
 
@@ -31,6 +49,8 @@ const PairCard = ({ studentId, opponentId, current }: PairCardProps) => {
 
   const styles: SxProps<Theme> = current
     ? { bgcolor: blue[500], color: "white" }
+    : passed
+    ? { bgcolor: red[500], color: "white" }
     : {};
 
   return (
@@ -40,7 +60,10 @@ const PairCard = ({ studentId, opponentId, current }: PairCardProps) => {
           <Grid xs={5}>
             <Stack direction="row" spacing={0.5} justifyContent="center">
               <PersonIcon />
-              <Typography variant="body1" color={current ? "white" : "primary"}>
+              <Typography
+                variant="body1"
+                color={current || passed ? "white" : "primary"}
+              >
                 {getFullName(student)}
               </Typography>
             </Stack>
@@ -48,7 +71,7 @@ const PairCard = ({ studentId, opponentId, current }: PairCardProps) => {
           <Grid xs={2}>
             <Typography
               variant="body1"
-              color={current ? "white" : "initial"}
+              color={current || passed ? "white" : "initial"}
               textAlign={"center"}
             >
               VS
@@ -57,7 +80,10 @@ const PairCard = ({ studentId, opponentId, current }: PairCardProps) => {
           <Grid xs={5}>
             <Stack direction="row" spacing={0.5} justifyContent="center">
               <PersonIcon />
-              <Typography variant="body1" color={current ? "white" : "primary"}>
+              <Typography
+                variant="body1"
+                color={current || passed ? "white" : "primary"}
+              >
                 {getFullName(opponent)}
               </Typography>
             </Stack>
@@ -82,9 +108,22 @@ const QuestionsList = ({
   if (!student) throw new Error("Student not Found with id " + studentId);
   return (
     <Stack spacing={1}>
-      <Typography variant="subtitle1" color="initial">
-        {getFullName(student)} {counter}/{questionLimit}
-      </Typography>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Chip
+          variant="filled"
+          color="secondary"
+          label={getFullName(student)}
+          sx={{
+            px: 6,
+            py: 2,
+            fontSize: "1.5em",
+            borderRadius: "5px",
+          }}
+        />
+        <Typography variant="subtitle1" color="initial">
+          Questions ({counter}/{questionLimit})
+        </Typography>
+      </Stack>
       <Stack spacing={1}>
         <Paper sx={{ py: 2, px: 1 }}>
           <Typography variant="body1" color="initial">
@@ -137,15 +176,29 @@ const QuizGame = (props: Props) => {
   const [currentAnswerer, setCurrentAnswerer] = useState<number | undefined>(
     undefined
   );
+  const [passedPairs, setPassedPairs] = useState<number[]>([]);
+  const [studentA, setStudentA] = useState<Student>();
+  const [studentB, setStudentB] = useState<Student>();
 
   const pairs = fetchPairs([], []);
   const questionsPerSession = 3;
   const studentsIds = pairs.flatMap((pair) => [pair.student, pair.opponent]);
+  const isQuizFinished = counter.current === pairs.length;
+
+  const [sessionRecords, setSessionRecords] = useState<
+    CreateSessionRecordDto[]
+  >([]);
 
   const takeNextPair = () => {
-    if (counter.current === pairs.length) counter.current = 0;
     const pair = pairs[counter.current];
     setCurrentPair(pair);
+
+    const studentA = fetchStudentById(pair.student);
+    const studentB = fetchStudentById(pair.opponent);
+    setStudentA(studentA);
+    setStudentB(studentB);
+
+    setPassedPairs((prev) => [...prev, pair.id]);
     setCurrentAsker(pair.student);
     setCurrentAnswerer(pair.opponent);
     setPairFinish(false);
@@ -157,6 +210,7 @@ const QuizGame = (props: Props) => {
   const takeNextQuestion = () => {
     if (questionCounter === questionsPerSession && asker === "opponent") {
       setPairFinish(true);
+      addSessionRecords();
       return;
     }
 
@@ -165,11 +219,47 @@ const QuizGame = (props: Props) => {
       const prevAsker = currentAsker;
       setCurrentAsker(currentAnswerer);
       setCurrentAnswerer(prevAsker);
+
+      if (studentA && studentB) {
+        const prevStudentA = studentA;
+        setStudentA(studentB);
+        setStudentB(prevStudentA);
+      }
+
       setQuestionCounter(1);
+      addSessionRecords();
       return;
     }
 
+    addSessionRecords();
     setQuestionCounter((prev) => prev + 1);
+    function addSessionRecords() {
+      if (currentAsker && currentAnswerer) {
+        const recordStudentA: CreateSessionRecordDto = {
+          sessionId: 1,
+          hostId: 1,
+          action: "ask",
+          studentId: currentAsker,
+          score,
+          opponentId: currentAnswerer,
+          wasPresent: true,
+          hostNotes: "Some notes",
+          question: "Some question",
+        };
+        const recordStudentB: CreateSessionRecordDto = {
+          sessionId: 1,
+          hostId: 1,
+          action: "answer",
+          studentId: currentAnswerer,
+          score,
+          opponentId: currentAsker,
+          wasPresent: true,
+          hostNotes: "Some notes",
+          question: "Some question",
+        };
+        setSessionRecords((prev) => [...prev, recordStudentA, recordStudentB]);
+      }
+    }
   };
 
   const changeScore = (
@@ -204,8 +294,7 @@ const QuizGame = (props: Props) => {
     }
   };
 
-  console.log(studentsScores.current);
-
+  console.log(sessionRecords);
   return (
     <Container maxWidth="lg" sx={{ height: "100vh" }}>
       <h1>Quiz Game</h1>
@@ -218,6 +307,9 @@ const QuizGame = (props: Props) => {
                 opponentId={pair.opponent}
                 key={pair.id}
                 current={pair.id === currentPair?.id}
+                passed={
+                  passedPairs.find((item) => pair.id === item) !== undefined
+                }
               />
             ))}
           </Stack>
@@ -255,6 +347,7 @@ const QuizGame = (props: Props) => {
                       }}
                       onChange={changeScore}
                       value={score}
+                      disabled={pairFinish}
                     />
                     <Stack
                       direction="row"
@@ -268,7 +361,7 @@ const QuizGame = (props: Props) => {
                         onClick={addScoreItself}
                         disabled={pairFinish}
                       >
-                        Add
+                        Add to {studentA && getFullName(studentA)}
                       </Button>
                       <Button
                         variant="contained"
@@ -276,34 +369,34 @@ const QuizGame = (props: Props) => {
                         onClick={addScoreToOpponent}
                         disabled={pairFinish}
                       >
-                        Add to opponent
+                        Add to {studentB && getFullName(studentB)}
                       </Button>
                     </Stack>
                   </Stack>
-                  {/* <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={takeNextQuestion}
-                    disabled={pairFinish}
-                  >
-                    {questionCounter === questionsPerSession
-                      ? "Finish"
-                      : "Next question"}
-                  </Button> */}
                 </>
               ) : (
                 "Choose some pair"
               )}
             </Stack>
             <Stack flexGrow={1}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={takeNextPair}
-                disabled={!pairFinish}
-              >
-                Next pair
-              </Button>
+              {isQuizFinished ? (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  disabled={!pairFinish}
+                >
+                  Finish Quiz
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={takeNextPair}
+                  disabled={isQuizFinished || !pairFinish}
+                >
+                  Next pair
+                </Button>
+              )}
             </Stack>
           </Stack>
         </Grid>

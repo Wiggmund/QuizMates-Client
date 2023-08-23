@@ -29,13 +29,27 @@ export const studentsSource: Student[] = [
     id: 3,
     firstName: "Alex",
     lastName: "Trim",
-    group_id: 2,
+    group_id: 1,
     isTeamLead: false,
   },
   {
     id: 4,
     firstName: "John",
     lastName: "Don",
+    group_id: 2,
+    isTeamLead: false,
+  },
+  {
+    id: 5,
+    firstName: "Mick",
+    lastName: "Pick",
+    group_id: 2,
+    isTeamLead: false,
+  },
+  {
+    id: 6,
+    firstName: "Tet",
+    lastName: "Ded",
     group_id: 2,
     isTeamLead: false,
   },
@@ -62,12 +76,17 @@ export const pairsSource: Pair[] = [
   {
     id: 1,
     student: 1,
-    opponent: 3,
+    opponent: 4,
   },
   {
     id: 2,
     student: 2,
-    opponent: 4,
+    opponent: 5,
+  },
+  {
+    id: 3,
+    student: 3,
+    opponent: 6,
   },
 ];
 

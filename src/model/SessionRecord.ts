@@ -11,6 +11,8 @@ export interface SessionRecord {
   question?: string;
 }
 
+export type CreateSessionRecordDto = Omit<SessionRecord, "id">;
+
 // private Long id;
 // private Long sessionId;
 // private Long pairId;
