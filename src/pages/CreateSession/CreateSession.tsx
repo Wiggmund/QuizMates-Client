@@ -19,12 +19,12 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { Stack } from "@mui/material";
 import { addSession } from "../../data";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 type Props = {};
 const CreateSession = (props: Props) => {
-  const [nextStepAllowed, setNextStepAllowed] = useState(false);
   const { defaultValues, fieldsInfo } = getSessionCreateFormData();
+  const navigate = useNavigate();
   const submitHandler = (data: CreateSessionFormData) => {
     dispatch(
       adjustSessionConfig({
@@ -32,7 +32,7 @@ const CreateSession = (props: Props) => {
         description: data.description,
       })
     );
-    setNextStepAllowed(true);
+    navigate(Endpoints.sessionConfiguration);
   };
   const dispatch = useAppDispatch();
 
@@ -56,35 +56,17 @@ const CreateSession = (props: Props) => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {nextStepAllowed ? (
-        <Stack alignItems="center" spacing={2}>
-          <Typography variant="h3" color="secondary">
-            Session created succsessfully. You can move on
-          </Typography>
-          <Link to={`${Endpoints.sessionConfiguration}`}>
-            <Button
-              variant="outlined"
-              color="primary"
-              size="large"
-              sx={{ px: 8 }}
-            >
-              Next
-            </Button>
-          </Link>
-        </Stack>
-      ) : (
-        <Stack spacing={2}>
-          <Typography variant="h1" color="secondary" textAlign="center">
-            Create your Session
-          </Typography>
-          <Form
-            fieldsDefaultValues={defaultValues}
-            formFields={fieldsInfo}
-            submitBtnTitle="Create"
-            submitHandler={submitHandler}
-          />
-        </Stack>
-      )}
+      <Stack spacing={2}>
+        <Typography variant="h1" color="secondary" textAlign="center">
+          Create your Session
+        </Typography>
+        <Form
+          fieldsDefaultValues={defaultValues}
+          formFields={fieldsInfo}
+          submitBtnTitle="Create"
+          submitHandler={submitHandler}
+        />
+      </Stack>
     </Container>
   );
 };
