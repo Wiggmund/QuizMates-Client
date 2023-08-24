@@ -5,5 +5,6 @@ export { default as SessionPage } from "./Session/Session";
 export { default as GroupPage } from "./Group/Group";
 export { default as HostPage } from "./Host/Host";
 export { default as SessionRecordsPage } from "./SessionRecords/SessionRecords";
-export { default as QuizPage } from "./Quiz/Quiz";
+export { default as QuizConfigurationPage } from "./QuizConfiguration/QuizConfiguration";
 export { default as QuizGamePage } from "./QuizGame/QuizGame";
+export { default as CreateSessionPage } from "./CreateSession/CreateSession";

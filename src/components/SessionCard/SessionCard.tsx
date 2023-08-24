@@ -15,8 +15,8 @@ type Props = {
 };
 
 const SessionCard = ({ session }: Props) => {
-  const bestStudent = fetchStudentById(session.bestStudent);
-  const bestGroup = fetchGroupById(session.bestGroup);
+  const bestStudent = fetchStudentById(session.bestStudent || -1);
+  const bestGroup = fetchGroupById(session.bestGroup || -1);
   const host = fetchHostById(session.host);
 
   const markerMap: SessionMarkerMap = {

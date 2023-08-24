@@ -8,3 +8,7 @@ export { default as SessionsTable } from "./SessionsTable/SessionsTable";
 export { default as GroupCard } from "./GroupCard/GroupCard";
 export { default as HostCard } from "./HostCard/HostCard";
 export { default as SessionRecordAccordion } from "./SessionRecordAccordion/SessionRecordAccordion";
+export { default as PairCard } from "./PairCard/PairCard";
+export { default as StudentScoreCard } from "./StudentScoreCard/StudentScoreCard";
+export { default as QuestionsList } from "./QuestionsList/QuestionsList";
+export { default as Form } from "./Form/Form";

@@ -38,7 +38,7 @@ const Home = (props: Props) => {
           <AppBar />
         </Grid>
         <Grid xs={12}>
-          <Link to={`${Endpoints.quizPage}`}>
+          <Link to={`${Endpoints.sessionCreate}`}>
             <Button
               variant="contained"
               color="secondary"

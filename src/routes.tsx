@@ -1,15 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
 import {
+  CreateSessionPage,
   GroupPage,
   HomePage,
   HostPage,
-  QuizPage,
+  QuizConfigurationPage,
+  QuizGamePage,
   SessionPage,
   SessionRecordsPage,
   SessionsPage,
   StudentPage,
 } from "./pages";
-import QuizGame from "./pages/QuizGame/QuizGame";
 
 export const rootRouter = createBrowserRouter([
   {
@@ -41,11 +42,15 @@ export const rootRouter = createBrowserRouter([
     element: <SessionRecordsPage />,
   },
   {
-    path: "/quiz",
-    element: <QuizPage />,
+    path: "/sessions/create",
+    element: <CreateSessionPage />,
   },
   {
-    path: "/quizgame",
-    element: <QuizGame />,
+    path: "/sessions/configure",
+    element: <QuizConfigurationPage />,
+  },
+  {
+    path: "/sessions/quiz",
+    element: <QuizGamePage />,
   },
 ]);

@@ -14,7 +14,12 @@ export interface Session {
   description: string;
   host: number;
   date: Date;
-  bestStudent: number;
-  bestGroup: number;
+  bestStudent?: number;
+  bestGroup?: number;
   status: keyof typeof SessionStatus;
 }
+
+export type CreateSessionDto = Omit<
+  Session,
+  "id" | "bestStudent" | "bestGroup"
+>;

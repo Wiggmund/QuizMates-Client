@@ -16,15 +16,30 @@ import {
   Container,
   Stack,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   fetchAllGroups,
   fetchAllHosts,
   fetchStudentsByGroupIds,
+  postCreateSession,
+  startSession,
 } from "../../data";
 import { getFullName } from "../../utils";
-import { Group, Host, Student } from "../../model";
+import { Group, Host, SessionStatus, Student } from "../../model";
 import { AppBar } from "../../components";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import {
+  addAbsentStudents,
+  addGroups,
+  addHosts,
+  addPresentStudents,
+} from "../../redux/features";
+import { Link } from "react-router-dom";
+import {
+  selectQuizById,
+  setCurrentSession,
+} from "../../redux/features/quizes/quizesSlice";
+import { Endpoints } from "../../constants";
 
 type AbstractEntity = {
   id: number;
@@ -94,11 +109,16 @@ const CheckboxList = <T extends AbstractEntity>({
 
 type Props = {};
 
-const Quiz = (props: Props) => {
+const QuizConfiguration = (props: Props) => {
   const [activeStep, setActiveStep] = React.useState(0);
   const [hosts, setHosts] = useState<Host[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [absentStudents, setAbsentStudents] = useState<Student[]>([]);
+  const dispatch = useAppDispatch();
+  const currentQuizId = useAppSelector((state) => state.quizes.currentQuizId);
+  const { title, description } = useAppSelector(
+    (state) => state.quizes.sessionConfig
+  );
 
   const addHost = (host: Host) => setHosts([...hosts, host]);
   const removeHost = (host: Host) =>
@@ -230,6 +250,28 @@ const Quiz = (props: Props) => {
   );
 
   const steps = [selectingHost, selectingGroups, selectingStudents];
+
+  const handleConfiguration = () => {
+    dispatch(addHosts({ quizId: currentQuizId, data: hosts }));
+    dispatch(addGroups({ quizId: currentQuizId, data: groups }));
+    dispatch(
+      addAbsentStudents({ quizId: currentQuizId, data: absentStudents })
+    );
+    dispatch(
+      addPresentStudents({ quizId: currentQuizId, data: presentStudents })
+    );
+
+    const currentSession = postCreateSession({
+      title,
+      description,
+      host: hosts[0].id,
+      date: new Date(),
+      status: SessionStatus.idle,
+    });
+    dispatch(setCurrentSession(currentSession.id));
+    startSession(currentSession.id);
+  };
+
   return (
     <Container maxWidth="lg">
       <AppBar />
@@ -321,9 +363,15 @@ const Quiz = (props: Props) => {
               <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
                 Reset
               </Button>
-              <Button variant="contained" sx={{ mt: 1, mr: 1 }}>
-                Start Quiz
-              </Button>
+              <Link to={`${Endpoints.sessionQuiz}`}>
+                <Button
+                  variant="contained"
+                  sx={{ mt: 1, mr: 1 }}
+                  onClick={handleConfiguration}
+                >
+                  Start Quiz
+                </Button>
+              </Link>
             </Stack>
           </Paper>
         )}
@@ -332,4 +380,4 @@ const Quiz = (props: Props) => {
   );
 };
 
-export default Quiz;
+export default QuizConfiguration;

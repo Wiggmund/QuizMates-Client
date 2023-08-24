@@ -1,14 +1,16 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore } from "@reduxjs/toolkit";
 
-import StudentsReducer from './features/student/studentsSlice';
-import { apiSlice } from './features/api/apiSlice';
+import { apiSlice } from "./features/api/apiSlice";
+import { QuizesReducer, StudentsReducer } from "./features";
 
 const store = configureStore({
-	reducer: {
-		students: StudentsReducer,
-		[apiSlice.reducerPath]: apiSlice.reducer
-	},
-	middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(apiSlice.middleware)
+  reducer: {
+    students: StudentsReducer,
+    quizes: QuizesReducer,
+    [apiSlice.reducerPath]: apiSlice.reducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(apiSlice.middleware),
 });
 
 export default store;

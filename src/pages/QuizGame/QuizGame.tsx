@@ -1,160 +1,21 @@
 import React, { useRef, useState } from "react";
 import Container from "@mui/material/Container";
-import { fetchPairs, fetchStudentById, fetchStudentsByIds } from "../../data";
 import {
-  Paper,
-  Stack,
-  Typography,
-  Button,
-  SxProps,
-  Theme,
-  TextField,
-  Chip,
-} from "@mui/material";
+  closeSession,
+  fetchPairs,
+  fetchSessionById,
+  fetchStudentById,
+  postCreateSessionRecords,
+} from "../../data";
+import { Stack, Button, TextField } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2"; // Grid version 2
-import PersonIcon from "@mui/icons-material/Person";
 import { getFullName } from "../../utils";
-import {
-  CreateSessionRecordDto,
-  Pair,
-  SessionRecord,
-  Student,
-} from "../../model";
-import { blue, red } from "@mui/material/colors";
-
-// private Long sessionId;
-// private Long pairId;
-// private Long studentId;
-// private Long hostId;
-// private Double score;
-// private String hostNotes;
-// private Boolean wasPresent;
-
-type PairCardProps = {
-  studentId: number;
-  opponentId: number;
-  current: boolean;
-  passed: boolean;
-};
-const PairCard = ({
-  studentId,
-  opponentId,
-  current,
-  passed,
-}: PairCardProps) => {
-  const student = fetchStudentById(studentId);
-  const opponent = fetchStudentById(opponentId);
-
-  if (!student || !opponent) return <h1>NOT FOUND</h1>;
-
-  const styles: SxProps<Theme> = current
-    ? { bgcolor: blue[500], color: "white" }
-    : passed
-    ? { bgcolor: red[500], color: "white" }
-    : {};
-
-  return (
-    <Paper sx={{ py: 2, px: 2, ...styles }}>
-      <Stack>
-        <Grid container columnSpacing={1} alignItems="center">
-          <Grid xs={5}>
-            <Stack direction="row" spacing={0.5} justifyContent="center">
-              <PersonIcon />
-              <Typography
-                variant="body1"
-                color={current || passed ? "white" : "primary"}
-              >
-                {getFullName(student)}
-              </Typography>
-            </Stack>
-          </Grid>
-          <Grid xs={2}>
-            <Typography
-              variant="body1"
-              color={current || passed ? "white" : "initial"}
-              textAlign={"center"}
-            >
-              VS
-            </Typography>
-          </Grid>
-          <Grid xs={5}>
-            <Stack direction="row" spacing={0.5} justifyContent="center">
-              <PersonIcon />
-              <Typography
-                variant="body1"
-                color={current || passed ? "white" : "primary"}
-              >
-                {getFullName(opponent)}
-              </Typography>
-            </Stack>
-          </Grid>
-        </Grid>
-      </Stack>
-    </Paper>
-  );
-};
-
-type QuestionsListProps = {
-  studentId: number;
-  counter: number;
-  questionLimit: number;
-};
-const QuestionsList = ({
-  studentId,
-  counter,
-  questionLimit,
-}: QuestionsListProps) => {
-  const student = fetchStudentById(studentId);
-  if (!student) throw new Error("Student not Found with id " + studentId);
-  return (
-    <Stack spacing={1}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Chip
-          variant="filled"
-          color="secondary"
-          label={getFullName(student)}
-          sx={{
-            px: 6,
-            py: 2,
-            fontSize: "1.5em",
-            borderRadius: "5px",
-          }}
-        />
-        <Typography variant="subtitle1" color="initial">
-          Questions ({counter}/{questionLimit})
-        </Typography>
-      </Stack>
-      <Stack spacing={1}>
-        <Paper sx={{ py: 2, px: 1 }}>
-          <Typography variant="body1" color="initial">
-            Question #{counter}
-          </Typography>
-        </Paper>
-      </Stack>
-    </Stack>
-  );
-};
-
-type StudentScoreCardProps = {
-  studentId: number;
-  score: number;
-};
-const StudentScoreCard = ({ studentId, score = 0 }: StudentScoreCardProps) => {
-  const student = fetchStudentById(studentId);
-
-  if (!student) throw new Error("Student not found with id " + studentId);
-
-  return (
-    <Stack direction="row" spacing={1}>
-      <Typography variant="body1" color="primary">
-        {getFullName(student)}
-      </Typography>
-      <Typography variant="body1" color="secondary">
-        {score}
-      </Typography>
-    </Stack>
-  );
-};
+import { CreateSessionRecordDto, Pair, Student } from "../../model";
+import { PairCard, QuestionsList, StudentScoreCard } from "../../components";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { selectQuizById } from "../../redux/features/quizes/quizesSlice";
+import { Link } from "react-router-dom";
+import { Endpoints } from "../../constants";
 
 type Props = {};
 
@@ -184,6 +45,12 @@ const QuizGame = (props: Props) => {
   const questionsPerSession = 3;
   const studentsIds = pairs.flatMap((pair) => [pair.student, pair.opponent]);
   const isQuizFinished = counter.current === pairs.length;
+  const quiz = useAppSelector((state) =>
+    selectQuizById(state, state.quizes.currentQuizId)
+  );
+  const currentSessionId = useAppSelector(
+    (state) => state.quizes.currentSessionId
+  );
 
   const [sessionRecords, setSessionRecords] = useState<
     CreateSessionRecordDto[]
@@ -294,6 +161,34 @@ const QuizGame = (props: Props) => {
     }
   };
 
+  const finishQuizHandler = () => {
+    if (!quiz) throw new Error("Quiz not found");
+
+    const bestStudentId = quiz.presentStudents
+      .map((st) => ({ studentId: st.id, score: studentsScores.current[st.id] }))
+      .reduce((prev, next) =>
+        prev.score > next.score ? prev : next
+      ).studentId;
+
+    const bestGroupId = quiz.groups
+      .map((group) => {
+        const students = quiz.presentStudents.filter(
+          (st) => st.group_id === group.id
+        );
+
+        const totalGroupScore = students.reduce(
+          (acc, next) => acc + studentsScores.current[next.id],
+          0
+        );
+
+        return { groupId: group.id, score: totalGroupScore };
+      })
+      .reduce((prev, next) => (prev.score > next.score ? prev : next)).groupId;
+
+    closeSession(currentSessionId, bestStudentId, bestGroupId);
+    postCreateSessionRecords(sessionRecords);
+  };
+
   console.log(sessionRecords);
   return (
     <Container maxWidth="lg" sx={{ height: "100vh" }}>
@@ -380,13 +275,16 @@ const QuizGame = (props: Props) => {
             </Stack>
             <Stack flexGrow={1}>
               {isQuizFinished ? (
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  disabled={!pairFinish}
-                >
-                  Finish Quiz
-                </Button>
+                <Link to={Endpoints.homePage}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    disabled={!pairFinish}
+                    onClick={finishQuizHandler}
+                  >
+                    Finish Quiz
+                  </Button>
+                </Link>
               ) : (
                 <Button
                   variant="contained"

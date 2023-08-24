@@ -1,4 +1,6 @@
 import {
+  CreateSessionDto,
+  CreateSessionRecordDto,
   Group,
   Host,
   Pair,
@@ -277,6 +279,20 @@ export function fetchSessionsByStudentId(studentId: number): Session[] {
   return result;
 }
 
+export function postCreateSession(dto: CreateSessionDto): Session {
+  const newSession = {
+    id: sessionsSource[sessionsSource.length - 1].id + 1,
+    title: dto.title,
+    description: dto.description,
+    date: dto.date,
+    status: dto.status,
+    host: dto.host,
+  };
+
+  sessionsSource.push(newSession);
+  return newSession;
+}
+
 //HOSTS
 export function fetchAllHosts(): Host[] {
   return hostsSource.slice();
@@ -295,12 +311,12 @@ export function fetchSessionRecordsBySessionAndStudent(
   sessionId: number,
   studentId: number
 ): SessionRecord[] {
-  return sessionRecordsSource
-    .slice()
-    .filter(
-      (record) =>
-        record.sessionId === sessionId && record.studentId === studentId
-    );
+  const result = sessionRecordsSource.filter(
+    (record) => record.sessionId === sessionId && record.studentId === studentId
+  );
+  console.log(`STUDENT_ID ${studentId} SESSION_ID ${sessionId}`);
+  console.log(result);
+  return result;
 }
 
 export function fetchSessionRecordsByStudentId(
@@ -330,8 +346,31 @@ export function startSession(sessionId: number): void {
   candidate.status = SessionStatus.active;
 }
 
-export function closeSession(sessionId: number) {
+export function closeSession(
+  sessionId: number,
+  bestStudent: number,
+  bestGroup: number
+) {
   const candidate = sessionsSource.find((s) => s.id === sessionId);
   if (!candidate) throw new Error(`Session with id [${sessionId}] not found`);
   candidate.status = SessionStatus.finished;
+  candidate.bestStudent = bestStudent;
+  candidate.bestGroup = bestGroup;
+}
+
+export function postCreateSessionRecords(dtos: CreateSessionRecordDto[]) {
+  let recordId = sessionRecordsSource[sessionRecordsSource.length - 1].id + 1;
+
+  const newRecords: SessionRecord[] = dtos.map((dto) => ({
+    id: recordId++,
+    ...dto,
+  }));
+
+  console.log("SOURCE");
+  console.log(sessionRecordsSource);
+  console.log("NEW RECORDS");
+  console.log(newRecords);
+  newRecords.forEach((record) => sessionRecordsSource.push(record));
+  console.log("NEW SOURCE");
+  console.log(sessionRecordsSource);
 }
