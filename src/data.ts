@@ -167,10 +167,10 @@ let idCounter = 1;
 const actions: ["ask", "answer"] = ["ask", "answer"];
 
 studentsSource.forEach((student, index) => {
-  const opponentId =
-    studentsSource[studentsSource.length - 1]?.id === student.id
-      ? 1
-      : student.id + 1;
+  const pairId =
+    pairsSource.find((p) => p.student === student.id)?.id ||
+    pairsSource.find((p) => p.opponent === student.id)?.id ||
+    1;
 
   sessionsSource.forEach((session) => {
     actions.forEach((action) => {
@@ -183,7 +183,7 @@ studentsSource.forEach((student, index) => {
           score: i % 2 === 0 ? 1 : 0,
           hostNotes: i % 2 === 0 ? "Some note" : undefined,
           wasPresent: true,
-          opponentId,
+          pairId,
           action,
           question:
             action === "ask"
@@ -373,4 +373,9 @@ export function postCreateSessionRecords(dtos: CreateSessionRecordDto[]) {
   newRecords.forEach((record) => sessionRecordsSource.push(record));
   console.log("NEW SOURCE");
   console.log(sessionRecordsSource);
+}
+
+// PAIRS
+export function fetchPairById(pairId: number): Pair | undefined {
+  return pairsSource.find((pair) => pair.id === pairId);
 }

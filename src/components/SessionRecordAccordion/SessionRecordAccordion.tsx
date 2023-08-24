@@ -152,7 +152,10 @@ const StudentAccordion = ({ student, session }: StudentAccordionProps) => {
         </Stack>
       </AccordionSummary>
       <AccordionDetails>
-        <SessionRecordsTable sessionRecords={sessionRecords} />
+        <SessionRecordsTable
+          sessionRecords={sessionRecords}
+          currentStudent={student.id}
+        />
       </AccordionDetails>
     </Accordion>
   );

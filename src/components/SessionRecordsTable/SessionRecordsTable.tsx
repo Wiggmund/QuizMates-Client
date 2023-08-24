@@ -9,16 +9,17 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { fetchStudentById } from "../../data";
+import { fetchPairById, fetchStudentById } from "../../data";
 import { Endpoints } from "../../constants";
 import { getFullName } from "../../utils";
 import { Link } from "react-router-dom";
 
 type Props = {
   sessionRecords: SessionRecord[];
+  currentStudent: number;
 };
 
-const SessionRecordsTable = ({ sessionRecords }: Props) => {
+const SessionRecordsTable = ({ sessionRecords, currentStudent }: Props) => {
   const sessionRecordsRowsHeaders = (
     <TableRow>
       <TableCell align="left">№</TableCell>
@@ -30,7 +31,12 @@ const SessionRecordsTable = ({ sessionRecords }: Props) => {
   );
 
   const sessionRecordsRows = sessionRecords.map((record, index) => {
-    const oponent = fetchStudentById(record.opponentId);
+    const pair = fetchPairById(record.pairId);
+    if (!pair) throw new Error("Pair not found id " + record.pairId);
+    const opponent =
+      pair.student === currentStudent
+        ? fetchStudentById(pair.opponent)
+        : fetchStudentById(pair.student);
 
     return (
       <TableRow
@@ -43,12 +49,12 @@ const SessionRecordsTable = ({ sessionRecords }: Props) => {
         </TableCell>
         <TableCell align="left">{record.action}</TableCell>
         <TableCell align="left">
-          {oponent && (
-            <Link to={`${Endpoints.studentPage}/${oponent.id}`}>
-              {getFullName(oponent)}
+          {opponent && (
+            <Link to={`${Endpoints.studentPage}/${opponent.id}`}>
+              {getFullName(opponent)}
             </Link>
           )}
-          {oponent === undefined && "unknown"}
+          {opponent === undefined && "unknown"}
         </TableCell>
         <TableCell align="left">
           {record.question ? record.question : ""}

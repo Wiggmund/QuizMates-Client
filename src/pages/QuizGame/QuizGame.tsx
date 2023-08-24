@@ -101,14 +101,14 @@ const QuizGame = (props: Props) => {
     addSessionRecords();
     setQuestionCounter((prev) => prev + 1);
     function addSessionRecords() {
-      if (currentAsker && currentAnswerer) {
+      if (currentAsker && currentAnswerer && currentPair) {
         const recordStudentA: CreateSessionRecordDto = {
           sessionId: 1,
           hostId: 1,
           action: "ask",
           studentId: currentAsker,
-          score,
-          opponentId: currentAnswerer,
+          score: studentsScores.current[currentAsker] || 0,
+          pairId: currentPair.id,
           wasPresent: true,
           hostNotes: "Some notes",
           question: "Some question",
@@ -118,8 +118,8 @@ const QuizGame = (props: Props) => {
           hostId: 1,
           action: "answer",
           studentId: currentAnswerer,
-          score,
-          opponentId: currentAsker,
+          score: studentsScores.current[currentAnswerer] || 0,
+          pairId: currentPair.id,
           wasPresent: true,
           hostNotes: "Some notes",
           question: "Some question",

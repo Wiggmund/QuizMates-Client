@@ -6,7 +6,7 @@ export interface SessionRecord {
   score: number;
   hostNotes?: string;
   wasPresent: boolean;
-  opponentId: number;
+  pairId: number;
   action: "answer" | "ask";
   question?: string;
 }
