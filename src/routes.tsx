@@ -11,6 +11,7 @@ import {
   SessionsPage,
   StudentPage,
 } from "./pages";
+import App from "./App";
 
 export const rootRouter = createBrowserRouter([
   {
@@ -52,5 +53,9 @@ export const rootRouter = createBrowserRouter([
   {
     path: "/sessions/quiz",
     element: <QuizGamePage />,
+  },
+  {
+    path: "/test",
+    element: <App />,
   },
 ]);

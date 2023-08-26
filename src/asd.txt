@@ -1,13 +1,51 @@
-Session
+// GROUPS
+fetchGroupById(groupId: number): Group | undefined DONE
+fetchAllGroups(): Group[] DONE
+
+fetchGroupByTeamLeadId(teamLeadId: number): Group | undefined
 
 
-export interface Session {
-  id: number;
-  title: string;
-  description: string;
-  host: number;
-  date: Date;
-  bestStudent: number; // must be optional
-  bestGroup: number; // must be optional
-  status: keyof typeof SessionStatus;
-}
+// STUDENTS
+fetchStudentById(studentId: number): Student | undefined DONE
+fetchAllStudents(): Student[] DONE
+fetchStudentsByGroup(groupId: number): Student[] DONE
+
+fetchStudentsWithGroup(): StudentWithGroup[]
+fetchStudentsWithGroupByGroupId(groupId: number): StudentWithGroup[]
+fetchStudentsByGroupIds(groupIds: number[]): Student[]
+fetchStudentsByIds(studentsIds: number[]): Student[]
+
+
+// SESSIONS
+fetchAllSessions(): Session[] DONE
+fetchSessionById(sessionId: number): Session | undefined DONE
+
+fetchSessionsCountByStudentId(studentId: number): number
+fetchSessionsByHostId(hostId: number): Session[]
+fetchSessionsByStudentId(studentId: number): Session[]
+postCreateSession(dto: CreateSessionDto): Session
+
+
+//HOSTS
+fetchAllHosts(): Host[] DONE
+fetchHostById(hostId: number): Host | undefined DONE
+
+
+// SessionRecords
+fetchAllSessionRecords(): SessionRecord[] DONE
+fetchSessionRecordsByStudentId(studentId: number): SessionRecord[] DONE
+
+fetchSessionRecordsBySessionAndStudent(sessionId: number, studentId: number): SessionRecord[]
+
+
+// START SESSION
+fetchPairs(groups: Group[], absentStudents: Student[]): Pair[]
+addSessionRecord(record: SessionRecord): void
+addSession(session: Session): void
+startSession(sessionId: number): void
+closeSession(sessionId: number, bestStudent: number, bestGroup: number)
+postCreateSessionRecords(dtos: CreateSessionRecordDto[])
+
+
+// PAIRS
+fetchPairById(pairId: number): Pair | undefined DONE
