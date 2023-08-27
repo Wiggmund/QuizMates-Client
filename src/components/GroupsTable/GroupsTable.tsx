@@ -1,6 +1,6 @@
 import React from "react";
-import { fetchAllGroups, fetchAllStudents } from "../../data";
 import {
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -9,15 +9,38 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { StudentsMap } from "../../model/Student";
+import { ALL_STUDENTS_FETCH_ERROR, StudentsMap } from "../../model/Student";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
+import { useGetAllGroupsQuery, useGetAllStudentsQuery } from "../../redux";
+import { ALL_GROUPS_FETCH_ERROR } from "../../model";
+import { ResourceNotFoundException } from "../../exceptions";
+import { getFullName } from "../../utils";
 
-type Props = {};
+type GroupsTableProps = {};
+const GroupsTable = (props: GroupsTableProps) => {
+  const {
+    data: students,
+    isSuccess: isSuccessStudent,
+    isError: isErrorStudent,
+    error: errorStudent,
+  } = useGetAllStudentsQuery("");
+  const {
+    data: groups,
+    isSuccess: isSuccessGroup,
+    isError: isErrorGroup,
+    error: errorGroup,
+  } = useGetAllGroupsQuery("");
 
-const GroupsTable = (props: Props) => {
-  const groups = fetchAllGroups();
-  const students = fetchAllStudents();
+  if (!isSuccessStudent || !isSuccessGroup) {
+    if (isErrorStudent)
+      throw new ResourceNotFoundException(ALL_STUDENTS_FETCH_ERROR());
+    if (isErrorGroup)
+      throw new ResourceNotFoundException(ALL_GROUPS_FETCH_ERROR());
+
+    return <CircularProgress />;
+  }
+
   const studentsMap: StudentsMap = {};
   students.forEach((st) => {
     studentsMap[st.id] = st;
@@ -33,10 +56,9 @@ const GroupsTable = (props: Props) => {
   );
 
   const groupsRows = groups.map((group) => {
-    const teamLead = studentsMap[group.teamLead];
-    const teamleadFullName = teamLead
-      ? `${teamLead.firstName} ${teamLead.lastName}`
-      : "unknown";
+    const teamLead = studentsMap[group.teamleadId];
+    console.log("teamLead");
+    console.log(teamLead);
     return (
       <TableRow
         hover
@@ -48,14 +70,15 @@ const GroupsTable = (props: Props) => {
           <Link to={`${Endpoints.groupPage}/${group.id}`}>{group.name}</Link>
         </TableCell>
         <TableCell align="left">
-          {teamLead && (
+          {teamLead ? (
             <Link to={`${Endpoints.studentPage}/${teamLead.id}`}>
-              {teamleadFullName}
+              {getFullName(teamLead)}
             </Link>
+          ) : (
+            getFullName(teamLead)
           )}
-          {teamLead === undefined && teamleadFullName}
         </TableCell>
-        <TableCell align="left">{group.studentsCount}</TableCell>
+        <TableCell align="left">{group.studentsAmount}</TableCell>
       </TableRow>
     );
   });

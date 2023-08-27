@@ -1,63 +1,146 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, useRef } from "react";
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  CircularProgress,
   Stack,
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
-  fetchAllGroups,
-  fetchHostById,
-  fetchSessionRecordsBySessionAndStudent,
-  fetchStudentsByGroup,
-} from "../../data";
-import { getFullName } from "../../utils";
+  getFullName,
+  getGroupNameOrUnknown,
+  getSessionTitleOrUnknown,
+} from "../../utils";
 
-import { Group, Session, SessionRecord, Student } from "../../model";
+import {
+  ALL_GROUPS_FETCH_ERROR,
+  GROUP_STUDENTS_FETCH_ERROR,
+  Group,
+  HOST_NOT_FOUND_BY_ID,
+  SESSION_RECS_FETCH_BY_SESSION_ERROR,
+  SESSION_RECS_FETCH_BY_STUDENT_ERROR,
+  Session,
+  SessionRecord,
+  Student,
+} from "../../model";
 import SessionRecordsTable from "../SessionRecordsTable/SessionRecordsTable";
 import SimpleChip from "../SimpleChip/SimpleChip";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
+import {
+  useGetAllGroupStudentsQuery,
+  useGetAllGroupsQuery,
+  useGetAllSessionRecordsBySessionIdQuery,
+  useGetAllSessionRecordsByStudentIdQuery,
+  useGetHostByIdQuery,
+} from "../../redux";
+import { ResourceNotFoundException } from "../../exceptions";
 
-const getScore = (
-  sessionId: number,
-  students: Student[],
-  sessionRecords?: SessionRecord[]
-): number => {
-  let sum = 0;
+const getScore = (sessionRecords: SessionRecord[]): number =>
+  sessionRecords.reduce((acc, record) => acc + record.score, 0);
 
-  students.forEach((student) => {
-    console.log(`Session (${sessionId}) student ${student.firstName}`);
-    if (!sessionRecords) {
-      sessionRecords = fetchSessionRecordsBySessionAndStudent(
-        sessionId,
-        student.id
+type StudentAccordionProps = {
+  student: Student;
+  session: Session;
+  groupStudentsScore: React.MutableRefObject<number>;
+};
+const StudentAccordion = ({
+  student,
+  session,
+  groupStudentsScore,
+}: StudentAccordionProps) => {
+  const {
+    data: sessionRecords,
+    isSuccess,
+    isError,
+    error,
+  } = useGetAllSessionRecordsBySessionIdQuery(session.id);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(
+        SESSION_RECS_FETCH_BY_SESSION_ERROR(session.id)
       );
-    }
-    console.log(sessionRecords);
 
-    const studentScoreSum = sessionRecords.reduce(
-      (acc, next) => acc + next.score,
-      0
-    );
+    return <CircularProgress />;
+  }
 
-    sum += studentScoreSum;
-  });
+  const studentSessionRecords = sessionRecords.filter(
+    (record) => record.studentId === student.id
+  );
+  const studentScoreSum = getScore(studentSessionRecords);
+  groupStudentsScore.current += studentScoreSum;
 
-  return sum;
+  return (
+    <Accordion>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls="panel1a-content"
+        id="panel1a-header"
+      >
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Typography>{getFullName(student)}</Typography>
+          <SimpleChip type="score" score={studentScoreSum} />
+          {session.bestStudent === student.id && <SimpleChip type="best" />}
+        </Stack>
+      </AccordionSummary>
+      <AccordionDetails>
+        <SessionRecordsTable studentId={student.id} />
+      </AccordionDetails>
+    </Accordion>
+  );
+};
+
+type SessionAccordionHostLinkProps = {
+  hostId: number;
+};
+const SessionAccordionHostLink = ({
+  hostId,
+}: SessionAccordionHostLinkProps) => {
+  const { data: host, isSuccess, isError, error } = useGetHostByIdQuery(hostId);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(HOST_NOT_FOUND_BY_ID(hostId));
+
+    return null;
+  }
+
+  return (
+    <Typography variant="caption" color="initial">
+      {host ? (
+        <Link to={`${Endpoints.hostPage}/${host.id}`}>
+          {getFullName(host)}(host)
+        </Link>
+      ) : (
+        getFullName(host)
+      )}
+    </Typography>
+  );
 };
 
 type SessionAccordionProps = {
   session: Session;
 };
-
 const SessionAccordion = ({
   session,
   children,
 }: PropsWithChildren<SessionAccordionProps>) => {
-  const host = fetchHostById(session.host);
+  const {
+    data: host,
+    isSuccess,
+    isError,
+    error,
+  } = useGetHostByIdQuery(session.host);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(HOST_NOT_FOUND_BY_ID(session.host));
+
+    return <CircularProgress />;
+  }
 
   return (
     <Accordion>
@@ -74,16 +157,8 @@ const SessionAccordion = ({
           flexGrow={1}
         >
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography>{session ? session.title : "unknown"}</Typography>
-            <Typography variant="caption" color="initial">
-              {host ? (
-                <Link to={`${Endpoints.hostPage}/${host.id}`}>
-                  {getFullName(host)}(host)
-                </Link>
-              ) : (
-                "unknown (host)"
-              )}
-            </Typography>
+            <Typography>{getSessionTitleOrUnknown(session)}</Typography>
+            <SessionAccordionHostLink hostId={session.host} />
           </Stack>
           <Typography variant="caption" color="initial">
             {session.date.toLocaleDateString()}
@@ -98,14 +173,24 @@ const SessionAccordion = ({
 type GroupAccordionProps = {
   group: Group;
   best: boolean;
-  score: number;
+  session: Session;
 };
-const GroupAccordion = ({
-  group,
-  children,
-  best,
-  score = 0,
-}: PropsWithChildren<GroupAccordionProps>) => {
+const GroupAccordion = ({ group, best, session }: GroupAccordionProps) => {
+  const groupStudentsScore = useRef<number>(0);
+  const {
+    data: groupStudents,
+    isSuccess,
+    isError,
+    error,
+  } = useGetAllGroupStudentsQuery(group.id);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(GROUP_STUDENTS_FETCH_ERROR(group.id));
+
+    return <CircularProgress />;
+  }
+
   return (
     <Accordion>
       <AccordionSummary
@@ -115,47 +200,21 @@ const GroupAccordion = ({
       >
         <Stack direction="row" alignItems="center" spacing={2}>
           <Typography color="initial">
-            {group ? group.name : "unknown"}
+            {getGroupNameOrUnknown(group)}
           </Typography>
-          <SimpleChip type="score" score={score} />
+          <SimpleChip type="score" score={groupStudentsScore.current} />
           {best && <SimpleChip type="best" />}
         </Stack>
       </AccordionSummary>
-      <AccordionDetails>{children}</AccordionDetails>
-    </Accordion>
-  );
-};
-
-type StudentAccordionProps = {
-  student: Student;
-  session: Session;
-};
-
-const StudentAccordion = ({ student, session }: StudentAccordionProps) => {
-  const sessionRecords = fetchSessionRecordsBySessionAndStudent(
-    session.id,
-    student.id
-  );
-  const studentScoreSum = getScore(session.id, [student], sessionRecords);
-
-  return (
-    <Accordion>
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
-        aria-controls="panel1a-content"
-        id="panel1a-header"
-      >
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography>{getFullName(student)}</Typography>
-          <SimpleChip type="score" score={studentScoreSum} />
-          {session.bestStudent === student.id && <SimpleChip type="best" />}
-        </Stack>
-      </AccordionSummary>
       <AccordionDetails>
-        <SessionRecordsTable
-          sessionRecords={sessionRecords}
-          currentStudent={student.id}
-        />
+        {groupStudents.map((student) => (
+          <StudentAccordion
+            student={student}
+            groupStudentsScore={groupStudentsScore}
+            session={session}
+            key={student.id}
+          />
+        ))}
       </AccordionDetails>
     </Accordion>
   );
@@ -165,42 +224,34 @@ type GroupAccordionsListProps = {
   session: Session;
   groups: Group[];
 };
-
-const GroupAccordionsList = ({
-  groups,
-  session,
-}: PropsWithChildren<GroupAccordionsListProps>) => {
+const GroupAccordionsList = ({ groups, session }: GroupAccordionsListProps) => {
   return (
     <>
       {groups.map((group) => {
-        const students = fetchStudentsByGroup(group.id);
-
         return (
           <GroupAccordion
             group={group}
+            session={session}
             key={group.id}
             best={session.bestGroup === group.id}
-            score={getScore(session.id, students)}
-          >
-            {students.map((student) => (
-              <StudentAccordion
-                student={student}
-                session={session}
-                key={student.id}
-              />
-            ))}
-          </GroupAccordion>
+          />
         );
       })}
     </>
   );
 };
 
-type Props = {
+type SessionRecordAccordionProps = {
   session: Session;
 };
-const SessionRecordAccordion = ({ session }: Props) => {
-  const groups = fetchAllGroups().filter((group) => group.studentsCount > 0);
+const SessionRecordAccordion = ({ session }: SessionRecordAccordionProps) => {
+  const { data: groups, isSuccess, isError, error } = useGetAllGroupsQuery("");
+
+  if (!isSuccess) {
+    if (isError) throw new ResourceNotFoundException(ALL_GROUPS_FETCH_ERROR());
+
+    return <CircularProgress />;
+  }
 
   return (
     <SessionAccordion session={session}>

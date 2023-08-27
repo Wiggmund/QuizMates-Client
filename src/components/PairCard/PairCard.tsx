@@ -1,10 +1,19 @@
 import React from "react";
 import PersonIcon from "@mui/icons-material/Person";
 import { Theme } from "@emotion/react";
-import { SxProps, Paper, Stack, Grid, Typography } from "@mui/material";
+import {
+  SxProps,
+  Paper,
+  Stack,
+  Grid,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import { blue, red } from "@mui/material/colors";
-import { fetchStudentById } from "../../data";
 import { getFullName } from "../../utils";
+import { useGetStudentByIdQuery } from "../../redux";
+import { STUDENT_NOT_FOUND_BY_ID } from "../../model";
+import { ResourceNotFoundException } from "../../exceptions";
 
 type PairCardProps = {
   studentId: number;
@@ -18,10 +27,28 @@ const PairCard = ({
   current,
   passed,
 }: PairCardProps) => {
-  const student = fetchStudentById(studentId);
-  const opponent = fetchStudentById(opponentId);
+  const {
+    data: student,
+    isSuccess: isSuccessStudent,
+    isError: isErrorStudent,
+    error: errorStudent,
+  } = useGetStudentByIdQuery(studentId);
 
-  if (!student || !opponent) return <h1>NOT FOUND</h1>;
+  const {
+    data: opponent,
+    isSuccess: isSuccessOpponent,
+    isError: isErrorOpponent,
+    error: errorOpponent,
+  } = useGetStudentByIdQuery(opponentId);
+
+  if (!isSuccessStudent || !isSuccessOpponent) {
+    if (isErrorStudent)
+      throw new ResourceNotFoundException(STUDENT_NOT_FOUND_BY_ID(studentId));
+    if (isErrorOpponent)
+      throw new ResourceNotFoundException(STUDENT_NOT_FOUND_BY_ID(opponentId));
+
+    return <CircularProgress />;
+  }
 
   const styles: SxProps<Theme> = current
     ? { bgcolor: blue[500], color: "white" }

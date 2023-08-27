@@ -1,7 +1,18 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Group, Host, Pair, SessionRecord, Student } from "../../../model";
+import {
+  CreateSessionDto,
+  CreateSessionRecordDto,
+  GenerateRandomPairsDto,
+  GenerateRandomPairsResponseDto,
+  Group,
+  Host,
+  Pair,
+  Session,
+  SessionRecord,
+  Student,
+  UpdateSessionDto,
+} from "../../../model";
 import { API, BASE_URL } from "../../../application.config";
-import { Session } from "inspector";
 
 export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
@@ -29,6 +40,16 @@ export const apiSlice = createApi({
     getPairById: builder.query<Pair, number>({
       query: (pairId) => API.pairs.getById(pairId),
     }),
+    generateRandomPairs: builder.mutation<
+      GenerateRandomPairsResponseDto,
+      GenerateRandomPairsDto
+    >({
+      query: (dto) => ({
+        url: API.pairs.generateRandom,
+        method: "POST",
+        body: dto,
+      }),
+    }),
 
     getAllStudents: builder.query<Student[], string>({
       query: () => API.students.getAll,
@@ -43,6 +64,20 @@ export const apiSlice = createApi({
     getSessionById: builder.query<Session, number>({
       query: (sessionId) => API.sessions.getById(sessionId),
     }),
+    createSession: builder.mutation<number, CreateSessionDto>({
+      query: (dto) => ({
+        url: API.sessions.create,
+        method: "POST",
+        body: dto,
+      }),
+    }),
+    updateSession: builder.mutation<void, UpdateSessionDto>({
+      query: (dto) => ({
+        url: API.sessions.update,
+        method: "PUT",
+        body: dto,
+      }),
+    }),
 
     getAllSessionRecords: builder.query<SessionRecord[], string>({
       query: () => API.sessionRecords.getAll,
@@ -55,6 +90,13 @@ export const apiSlice = createApi({
     }),
     getSessionRecordById: builder.query<SessionRecord, number>({
       query: (sessionRecordId) => API.sessionRecords.getById(sessionRecordId),
+    }),
+    createSessionRecord: builder.mutation<void, CreateSessionRecordDto>({
+      query: (dto) => ({
+        url: API.sessionRecords.create,
+        method: "POST",
+        body: dto,
+      }),
     }),
   }),
 });
@@ -78,4 +120,9 @@ export const {
 
   useGetAllSessionRecordsByStudentIdQuery,
   useGetAllSessionRecordsBySessionIdQuery,
+
+  useGenerateRandomPairsMutation,
+  useUpdateSessionMutation,
+  useCreateSessionRecordMutation,
+  useCreateSessionMutation,
 } = apiSlice;

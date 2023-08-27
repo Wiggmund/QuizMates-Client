@@ -23,6 +23,7 @@ export const API = {
   pairs: {
     getAll: "/pairs",
     getById: (pairId: number) => `/pairs?pairId=${pairId}`,
+    generateRandom: "students/pairs",
     create: "/pairs",
     update: "/pairs",
     deleteById: "/pairs",

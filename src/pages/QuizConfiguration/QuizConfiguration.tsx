@@ -15,17 +15,18 @@ import {
   Typography,
   Container,
   Stack,
+  CircularProgress,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import {
-  fetchAllGroups,
-  fetchAllHosts,
-  fetchStudentsByGroupIds,
-  postCreateSession,
-  startSession,
-} from "../../data";
 import { getFullName } from "../../utils";
-import { Group, Host, SessionStatus, Student } from "../../model";
+import {
+  ALL_GROUPS_FETCH_ERROR,
+  ALL_STUDENTS_FETCH_ERROR,
+  Group,
+  Host,
+  SessionStatus,
+  Student,
+} from "../../model";
 import { AppBar } from "../../components";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
@@ -40,6 +41,15 @@ import {
   setCurrentSession,
 } from "../../redux/features/quizes/quizesSlice";
 import { Endpoints } from "../../constants";
+import {
+  useCreateSessionMutation,
+  useGetAllGroupsQuery,
+  useGetAllHostsQuery,
+  useGetAllStudentsQuery,
+  useUpdateSessionMutation,
+} from "../../redux";
+import { ALL_HOSTS_FETCH_ERROR } from "../../model/Host";
+import { ResourceNotFoundException } from "../../exceptions";
 
 type AbstractEntity = {
   id: number;
@@ -120,6 +130,39 @@ const QuizConfiguration = (props: Props) => {
     (state) => state.quizes.sessionConfig
   );
 
+  const [createSession] = useCreateSessionMutation();
+  const [updateSession] = useUpdateSessionMutation();
+
+  const {
+    data: fetchedHosts,
+    isSuccess: isSuccessHost,
+    isError: isErrorHost,
+    error: errorHost,
+  } = useGetAllHostsQuery("");
+  const {
+    data: fetchedGroups,
+    isSuccess: isSuccessGroup,
+    isError: isErrorGroup,
+    error: errorGroup,
+  } = useGetAllGroupsQuery("");
+  const {
+    data: allFetchedStudents,
+    isSuccess: isSuccessStudent,
+    isError: isErrorStudent,
+    error: errorStudent,
+  } = useGetAllStudentsQuery("");
+
+  if (!isSuccessStudent || !isSuccessGroup || !isSuccessHost) {
+    if (isErrorHost)
+      throw new ResourceNotFoundException(ALL_HOSTS_FETCH_ERROR());
+    if (isErrorGroup)
+      throw new ResourceNotFoundException(ALL_GROUPS_FETCH_ERROR());
+    if (isErrorStudent)
+      throw new ResourceNotFoundException(ALL_STUDENTS_FETCH_ERROR());
+
+    return <CircularProgress />;
+  }
+
   const addHost = (host: Host) => setHosts([...hosts, host]);
   const removeHost = (host: Host) =>
     setHosts(hosts.filter((item) => item.id !== host.id));
@@ -148,7 +191,6 @@ const QuizConfiguration = (props: Props) => {
     setActiveStep(0);
   };
 
-  const fetchedHosts = fetchAllHosts();
   const isHostSelected = hosts.length > 0;
   const selectingHost = {
     label: "Host",
@@ -164,7 +206,6 @@ const QuizConfiguration = (props: Props) => {
     errorMessage: "Please select at least on host",
   };
 
-  const fetchedGroups = fetchAllGroups();
   const isGroupsSelected = groups.length > 0;
   const selectingGroups = {
     label: "Groups",
@@ -180,8 +221,9 @@ const QuizConfiguration = (props: Props) => {
     errorMessage: "Please selecte at least one group",
   };
 
-  const groupsIds = fetchedGroups.map((group) => group.id);
-  const fetchedStudents = fetchStudentsByGroupIds(groupsIds);
+  const fetchedStudents = allFetchedStudents.filter((st) =>
+    fetchedGroups.find((g) => g.id === st.groupId)
+  );
   const selectingStudents = {
     label: "Absent students",
     description: "Select students who is absent and can't take part in Quiz",
@@ -251,7 +293,7 @@ const QuizConfiguration = (props: Props) => {
 
   const steps = [selectingHost, selectingGroups, selectingStudents];
 
-  const handleConfiguration = () => {
+  const handleConfiguration = async () => {
     dispatch(addHosts({ quizId: currentQuizId, data: hosts }));
     dispatch(addGroups({ quizId: currentQuizId, data: groups }));
     dispatch(
@@ -261,15 +303,20 @@ const QuizConfiguration = (props: Props) => {
       addPresentStudents({ quizId: currentQuizId, data: presentStudents })
     );
 
-    const currentSession = postCreateSession({
+    const currentSessionId = await createSession({
       title,
       description,
       host: hosts[0].id,
       date: new Date(),
-      status: SessionStatus.idle,
-    });
-    dispatch(setCurrentSession(currentSession.id));
-    startSession(currentSession.id);
+      status: SessionStatus.CREATED,
+    }).unwrap();
+
+    dispatch(setCurrentSession(currentSessionId));
+
+    // await updateSession({
+    //   ...currentSession,
+    //   status: SessionStatus.STARTED
+    // });
   };
 
   return (

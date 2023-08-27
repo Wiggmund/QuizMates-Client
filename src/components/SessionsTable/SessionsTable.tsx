@@ -1,6 +1,6 @@
 import React from "react";
-import { fetchAllHosts, fetchHostById } from "../../data";
 import {
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -11,15 +11,80 @@ import {
 } from "@mui/material";
 import { Endpoints } from "../../constants";
 import { Link } from "react-router-dom";
-import { Session } from "../../model";
+import { useGetHostByIdQuery, useGetSessionByIdQuery } from "../../redux";
+import { getFullName } from "../../utils";
+import { ResourceNotFoundException } from "../../exceptions";
+import { HOST_NOT_FOUND_BY_ID, SESSION_NOT_FOUND_BY_ID } from "../../model";
 
-type Props = {
-  sessions: Session[];
+type SessionTableHostCellsProps = {
+  hostId: number;
+};
+const SessionTableHostCell = ({ hostId }: SessionTableHostCellsProps) => {
+  const { data: host, isSuccess, isError, error } = useGetHostByIdQuery(hostId);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(HOST_NOT_FOUND_BY_ID(hostId));
+
+    return <CircularProgress />;
+  }
+
+  return (
+    <TableCell align="left">
+      {host ? (
+        <Link to={`${Endpoints.hostPage}/${host.id}`}>{getFullName(host)}</Link>
+      ) : (
+        getFullName(host)
+      )}
+    </TableCell>
+  );
 };
 
-const SessionsTable = ({ sessions }: Props) => {
-  const hosts = fetchAllHosts();
+type SessionTableRecordProps = {
+  sessionId: number;
+};
+const SessionTableRecord = ({ sessionId }: SessionTableRecordProps) => {
+  const {
+    data: session,
+    isSuccess,
+    isError,
+    error,
+  } = useGetSessionByIdQuery(sessionId);
 
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(SESSION_NOT_FOUND_BY_ID(sessionId));
+
+    return <CircularProgress />;
+  }
+
+  const formattedDate = session.date
+    ? session.date.toLocaleDateString()
+    : "unknown";
+
+  return (
+    <TableRow
+      hover
+      key={session.id}
+      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+    >
+      <TableCell align="left">{session.status}</TableCell>
+      <TableCell align="left">{session.id}</TableCell>
+      <TableCell component="th" scope="row">
+        <Link to={`${Endpoints.sessionsPage}/${session.id}`}>
+          {session.title}
+        </Link>
+      </TableCell>
+      <SessionTableHostCell hostId={session.host} />
+      <TableCell align="left">{formattedDate}</TableCell>
+    </TableRow>
+  );
+};
+
+type SessionsTableProps = {
+  sessionsIds: number[];
+};
+const SessionsTable = ({ sessionsIds }: SessionsTableProps) => {
   const sessionsRowHeaders = (
     <TableRow>
       <TableCell align="left">Status</TableCell>
@@ -30,38 +95,9 @@ const SessionsTable = ({ sessions }: Props) => {
     </TableRow>
   );
 
-  const sessionsRows = sessions.map((session) => {
-    const host = fetchHostById(session.host);
-    const hostFullName = host
-      ? `${host.firstName} ${host.lastName}`
-      : "unknown";
-    const formattedDate = session.date
-      ? session.date.toLocaleDateString()
-      : "unknown";
-
-    return (
-      <TableRow
-        hover
-        key={session.id}
-        sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-      >
-        <TableCell align="left">{session.status}</TableCell>
-        <TableCell align="left">{session.id}</TableCell>
-        <TableCell component="th" scope="row">
-          <Link to={`${Endpoints.sessionsPage}/${session.id}`}>
-            {session.title}
-          </Link>
-        </TableCell>
-        <TableCell align="left">
-          {host && (
-            <Link to={`${Endpoints.hostPage}/${host.id}`}>{hostFullName}</Link>
-          )}
-          {host === undefined && "unknown"}
-        </TableCell>
-        <TableCell align="left">{formattedDate}</TableCell>
-      </TableRow>
-    );
-  });
+  const sessionsRows = sessionsIds.map((sessionId) => (
+    <SessionTableRecord sessionId={sessionId} key={sessionId} />
+  ));
 
   return (
     <TableContainer component={Paper}>

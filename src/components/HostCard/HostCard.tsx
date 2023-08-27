@@ -1,17 +1,32 @@
 import React from "react";
-import { Host } from "../../model";
+import { ALL_SESSION_FETCH_ERROR, Host } from "../../model";
 import { getFullName } from "../../utils";
-import { fetchSessionsByHostId } from "../../data";
-import { Stack, Typography } from "@mui/material";
+import { CircularProgress, Stack, Typography } from "@mui/material";
 import SessionsTable from "../SessionsTable/SessionsTable";
+import { useGetAllSessionsQuery } from "../../redux";
+import { ResourceNotFoundException } from "../../exceptions";
 
 type Props = {
   host: Host;
 };
 
 const HostCard = ({ host }: Props) => {
+  const {
+    data: allSessions,
+    isSuccess,
+    isError,
+    error,
+  } = useGetAllSessionsQuery("");
+
+  if (!isSuccess) {
+    if (isError) throw new ResourceNotFoundException(ALL_SESSION_FETCH_ERROR());
+
+    return <CircularProgress />;
+  }
+
+  const sessions = allSessions.filter((session) => session.host === host.id);
+  const sessionsIds = sessions.map((session) => session.id);
   const hostFullName = getFullName(host);
-  const sessions = fetchSessionsByHostId(host.id);
 
   const infoBlock = (
     <Stack
@@ -49,7 +64,7 @@ const HostCard = ({ host }: Props) => {
       <Typography variant="subtitle1" color="initial">
         Conducted sessions:
       </Typography>
-      <SessionsTable sessions={sessions} />
+      <SessionsTable sessionsIds={sessionsIds} />
     </Stack>
   );
 };

@@ -18,7 +18,6 @@ import { Quiz } from "../../model";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { Stack } from "@mui/material";
-import { addSession } from "../../data";
 import { Link, useNavigate } from "react-router-dom";
 
 type Props = {};

@@ -1,46 +1,142 @@
-import { StudentWithGroup } from "../../model";
+import {
+  GROUP_NOT_FOUND_BY_ID,
+  GROUP_STUDENTS_FETCH_ERROR,
+  SESSION_RECS_FETCH_BY_STUDENT_ERROR,
+  STUDENT_NOT_FOUND_BY_ID,
+  Student,
+} from "../../model";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { Link, useParams } from "react-router-dom";
-import {
-  fetchGroupById,
-  fetchGroupByTeamLeadId,
-  fetchSessionsByStudentId,
-  fetchStudentById,
-  fetchStudentsWithGroupByGroupId,
-} from "../../data";
-import { getFullName } from "../../utils";
-import { Stack } from "@mui/material";
+import { distinct, getFullName, getGroupNameOrUnknown } from "../../utils";
+import { CircularProgress, Stack } from "@mui/material";
 import StudentsTable from "../StudentsTable/StudentsTable";
 import { Endpoints } from "../../constants";
 import SessionsTable from "../SessionsTable/SessionsTable";
+import {
+  useGetStudentByIdQuery,
+  useGetAllSessionRecordsByStudentIdQuery,
+  useGetGroupByIdQuery,
+  useGetAllGroupStudentsQuery,
+} from "../../redux";
+import { ResourceNotFoundException } from "../../exceptions";
+
+type GroupInfoBlockProps = {
+  groupId: number;
+};
+const GroupInfoBlock = ({ groupId }: GroupInfoBlockProps) => {
+  const {
+    data: group,
+    isSuccess,
+    isError,
+    error,
+  } = useGetGroupByIdQuery(groupId);
+
+  if (!isSuccess) {
+    if (isError) throw new Error("Failed to fetch group by id");
+
+    return <CircularProgress />;
+  }
+
+  return (
+    <Stack alignItems="center">
+      <Typography variant="caption" color="initial">
+        Group
+      </Typography>
+      <Typography variant="h6" sx={{ fontWeight: "bold" }} color="initial">
+        {group ? (
+          <Link to={`${Endpoints.groupPage}/${group.id}`}>{group.name}</Link>
+        ) : (
+          getGroupNameOrUnknown(group)
+        )}
+      </Typography>
+    </Stack>
+  );
+};
+
+type TeamleadBlockProps = {
+  groupId: number;
+  student: Student;
+};
+const TeamleadBlock = ({ groupId, student }: TeamleadBlockProps) => {
+  const {
+    data: group,
+    isSuccess: isSuccessGroup,
+    isError: isErrorGroup,
+    error: errorGroup,
+  } = useGetGroupByIdQuery(groupId);
+
+  const {
+    data: groupStudents,
+    isSuccess: isSuccessGroupStudents,
+    isError: isErrorGroupStudents,
+    error: errorGroupStudents,
+  } = useGetAllGroupStudentsQuery(groupId);
+
+  if (!isSuccessGroup || !isSuccessGroupStudents) {
+    if (isErrorGroup)
+      throw new ResourceNotFoundException(GROUP_NOT_FOUND_BY_ID(groupId));
+    if (isErrorGroupStudents)
+      throw new ResourceNotFoundException(GROUP_STUDENTS_FETCH_ERROR(groupId));
+
+    return <CircularProgress />;
+  }
+
+  if (student.id !== group.teamleadId) return null;
+  const studentsIds = groupStudents.map((student) => student.id);
+
+  return (
+    <Stack spacing={2}>
+      <Typography variant="subtitle1" color="initial">
+        {getFullName(student)} is a teamlead of {getGroupNameOrUnknown(group)}{" "}
+        and manages next students:
+      </Typography>
+      <StudentsTable studentsIds={studentsIds} />
+    </Stack>
+  );
+};
 
 type StudentUrlParams = {
   studentId: string;
 };
 
-type StudentProps = {};
-
-const StudentCard = (props: StudentProps) => {
+type StudentCardProps = {};
+const StudentCard = (props: StudentCardProps) => {
   let studentId = Number.parseInt(
     useParams<StudentUrlParams>().studentId as string
   );
-  const student = fetchStudentById(studentId);
 
-  if (!student) {
-    return (
-      <Typography variant="h1" color="error">
-        Student with {studentId} NOT FOUND
-      </Typography>
-    );
+  const {
+    data: student,
+    isSuccess: isSuccessStudent,
+    isError: isErrorStudent,
+    error: errorStudent,
+  } = useGetStudentByIdQuery(studentId);
+
+  const {
+    data: studentRecords,
+    isSuccess: isSuccessSessionRecords,
+    isError: isErrorSessionRecords,
+    error: errorSessionRecords,
+  } = useGetAllSessionRecordsByStudentIdQuery(studentId);
+
+  if (!isSuccessStudent || !isSuccessSessionRecords) {
+    if (isErrorStudent)
+      throw new ResourceNotFoundException(STUDENT_NOT_FOUND_BY_ID(studentId));
+    if (isErrorSessionRecords)
+      throw new ResourceNotFoundException(
+        SESSION_RECS_FETCH_BY_STUDENT_ERROR(studentId)
+      );
+
+    return <CircularProgress />;
   }
 
-  const sessions = fetchSessionsByStudentId(studentId);
+  const sessionsIds = distinct<number>(
+    studentRecords.map((record) => record.sessionId)
+  );
+
   const studentFullName = getFullName(student);
-  const studentGroup = fetchGroupById(student.group_id);
-  const groupName = studentGroup ? studentGroup.name : "unknown";
-  const sessionsCount = sessions.length;
-  const teamLeadTitle = "TEAMLEAD";
+  const sessionsCount = sessionsIds.length;
 
   const infoBlock = (
     <Stack
@@ -58,19 +154,7 @@ const StudentCard = (props: StudentProps) => {
         </Typography>
       </Stack>
 
-      <Stack alignItems="center">
-        <Typography variant="caption" color="initial">
-          Group
-        </Typography>
-        <Typography variant="h6" sx={{ fontWeight: "bold" }} color="initial">
-          {studentGroup && (
-            <Link to={`${Endpoints.groupPage}/${studentGroup.id}`}>
-              {studentGroup.name}
-            </Link>
-          )}
-          {studentGroup === undefined && groupName}
-        </Typography>
-      </Stack>
+      <GroupInfoBlock groupId={student.groupId} />
 
       <Stack alignItems="center">
         <Typography variant="caption" color="initial">
@@ -83,39 +167,18 @@ const StudentCard = (props: StudentProps) => {
     </Stack>
   );
 
-  let teamLeadBlock;
-  if (student.isTeamLead) {
-    let students: StudentWithGroup[] = [];
-    const targetGroup = fetchGroupByTeamLeadId(student.id);
-
-    if (targetGroup) {
-      students = fetchStudentsWithGroupByGroupId(targetGroup.id);
-      students = students.filter((st) => st.id !== student.id);
-    }
-
-    teamLeadBlock = (
-      <Stack spacing={2}>
-        <Typography variant="subtitle1" color="initial">
-          {studentFullName} is a teamlead of {groupName} and manages next
-          students:
-        </Typography>
-        <StudentsTable students={students} />
-      </Stack>
-    );
-  }
-
   return (
     <Container maxWidth="lg">
       <Typography variant="h1" color="initial">
         {studentFullName}
       </Typography>
       {infoBlock}
-      {teamLeadBlock}
+      <TeamleadBlock groupId={student.groupId} student={student} />
       <Stack spacing={2} sx={{ py: 4 }}>
         <Typography variant="subtitle1" color="initial">
           Passed sessions:
         </Typography>
-        <SessionsTable sessions={sessions} />
+        <SessionsTable sessionsIds={sessionsIds} />
       </Stack>
     </Container>
   );

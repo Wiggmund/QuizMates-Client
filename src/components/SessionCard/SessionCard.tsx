@@ -1,34 +1,74 @@
 import React from "react";
-import { Session, SessionStatus } from "../../model";
-import { Stack, Typography } from "@mui/material";
-import { fetchGroupById, fetchHostById, fetchStudentById } from "../../data";
+import {
+  GROUP_NOT_FOUND_BY_ID,
+  HOST_NOT_FOUND_BY_ID,
+  STUDENT_NOT_FOUND_BY_ID,
+  Session,
+  SessionStatus,
+} from "../../model";
+import { CircularProgress, Stack, Typography } from "@mui/material";
 import { green, grey } from "@mui/material/colors";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
+import {
+  useGetGroupByIdQuery,
+  useGetHostByIdQuery,
+  useGetStudentByIdQuery,
+} from "../../redux";
+import { ResourceNotFoundException } from "../../exceptions";
+import { getFullName, getGroupNameOrUnknown } from "../../utils";
 
 interface SessionMarkerMap {
   [key: string]: string;
 }
 
-type Props = {
+type SessionCardProps = {
   session: Session;
 };
+const SessionCard = ({ session }: SessionCardProps) => {
+  const NOT_EXISTED = -1;
+  const {
+    data: bestStudent,
+    isSuccess: isSuccessStudent,
+    isError: isErrorStudent,
+    error: errorStudent,
+  } = useGetStudentByIdQuery(session.bestStudent || NOT_EXISTED);
+  const {
+    data: bestGroup,
+    isSuccess: isSuccessGroup,
+    isError: isErrorGroup,
+    error: errorGroup,
+  } = useGetGroupByIdQuery(session.bestGroup || NOT_EXISTED);
+  const {
+    data: host,
+    isSuccess: isSuccessHost,
+    isError: isErrorHost,
+    error: errorHost,
+  } = useGetHostByIdQuery(session.host);
 
-const SessionCard = ({ session }: Props) => {
-  const bestStudent = fetchStudentById(session.bestStudent || -1);
-  const bestGroup = fetchGroupById(session.bestGroup || -1);
-  const host = fetchHostById(session.host);
+  if (!isSuccessStudent || !isSuccessGroup || !isSuccessHost) {
+    if (isErrorStudent)
+      throw new ResourceNotFoundException(
+        STUDENT_NOT_FOUND_BY_ID(session.bestStudent || NOT_EXISTED)
+      );
+    if (isErrorGroup)
+      throw new ResourceNotFoundException(
+        GROUP_NOT_FOUND_BY_ID(session.bestGroup || NOT_EXISTED)
+      );
+    if (isErrorHost)
+      throw new ResourceNotFoundException(HOST_NOT_FOUND_BY_ID(session.host));
+
+    return <CircularProgress />;
+  }
 
   const markerMap: SessionMarkerMap = {
-    [SessionStatus.finished]: grey[500],
-    [SessionStatus.active]: green[500],
+    [SessionStatus.FINISHED]: grey[500],
+    [SessionStatus.STARTED]: green[500],
   };
 
-  const bestStudentFullName = bestStudent
-    ? `${bestStudent.firstName} ${bestStudent.lastName}`
-    : "unknown";
-  const hostFullName = host ? `${host.firstName} ${host.lastName}` : "unknown";
-  const bestGroupName = bestGroup ? bestGroup.name : "unknown";
+  const bestStudentFullName = getFullName(bestStudent);
+  const hostFullName = getFullName(host);
+  const bestGroupName = getGroupNameOrUnknown(bestGroup);
 
   const header = (
     <Stack

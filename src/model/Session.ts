@@ -1,11 +1,11 @@
 export const SessionStatus: {
-  finished: any;
-  active: any;
-  idle: any;
+  FINISHED: any;
+  STARTED: any;
+  CREATED: any;
 } = {
-  finished: "finished",
-  active: "active",
-  idle: "idle",
+  FINISHED: "FINISHED",
+  STARTED: "STARTED",
+  CREATED: "CREATED",
 };
 
 export interface Session {
@@ -23,3 +23,10 @@ export type CreateSessionDto = Omit<
   Session,
   "id" | "bestStudent" | "bestGroup"
 >;
+
+export interface UpdateSessionDto extends Session {}
+
+export const SESSION_NOT_FOUND_BY_ID = (id: number) =>
+  `Session with id [${id}] not found`;
+
+export const ALL_SESSION_FETCH_ERROR = () => `Failed to fetch all sessions`;

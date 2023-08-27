@@ -1,6 +1,11 @@
 import React from "react";
-import { SessionRecord } from "../../model";
 import {
+  PAIR_NOT_FOUND_BY_ID,
+  SESSION_RECS_FETCH_BY_STUDENT_ERROR,
+  STUDENT_NOT_FOUND_BY_ID,
+} from "../../model";
+import {
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -9,17 +14,93 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { fetchPairById, fetchStudentById } from "../../data";
 import { Endpoints } from "../../constants";
 import { getFullName } from "../../utils";
 import { Link } from "react-router-dom";
+import {
+  useGetAllSessionRecordsByStudentIdQuery,
+  useGetPairByIdQuery,
+  useGetStudentByIdQuery,
+} from "../../redux";
+import { ResourceNotFoundException } from "../../exceptions";
 
-type Props = {
-  sessionRecords: SessionRecord[];
-  currentStudent: number;
+type SessionRecordsTableOpponentCellProps = {
+  opponentId: number;
+};
+const SessionRecordsTableOpponentCell = ({
+  opponentId,
+}: SessionRecordsTableOpponentCellProps) => {
+  const {
+    data: opponent,
+    isSuccess,
+    isError,
+    error,
+  } = useGetStudentByIdQuery(opponentId);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(STUDENT_NOT_FOUND_BY_ID(opponentId));
+
+    return null;
+  }
+
+  return (
+    <TableCell align="left">
+      {opponent ? (
+        <Link to={`${Endpoints.studentPage}/${opponent.id}`}>
+          {getFullName(opponent)}
+        </Link>
+      ) : (
+        getFullName(opponent)
+      )}
+    </TableCell>
+  );
 };
 
-const SessionRecordsTable = ({ sessionRecords, currentStudent }: Props) => {
+type SessionRecordsTablePairCellProps = {
+  pairId: number;
+  currentStudentId: number;
+};
+const SessionRecordsTablePairCell = ({
+  pairId,
+  currentStudentId,
+}: SessionRecordsTablePairCellProps) => {
+  const { data: pair, isSuccess, isError, error } = useGetPairByIdQuery(pairId);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(PAIR_NOT_FOUND_BY_ID(pairId));
+
+    return null;
+  }
+
+  if (pair.student === currentStudentId) {
+    return <SessionRecordsTableOpponentCell opponentId={pair.opponent} />;
+  }
+
+  return <SessionRecordsTableOpponentCell opponentId={pair.student} />;
+};
+
+type SessionRecordsTableProps = {
+  studentId: number;
+};
+const SessionRecordsTable = ({ studentId }: SessionRecordsTableProps) => {
+  const {
+    data: studentSessionRecords,
+    isSuccess,
+    isError,
+    error,
+  } = useGetAllSessionRecordsByStudentIdQuery(studentId);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(
+        SESSION_RECS_FETCH_BY_STUDENT_ERROR(studentId)
+      );
+
+    return <CircularProgress />;
+  }
+
   const sessionRecordsRowsHeaders = (
     <TableRow>
       <TableCell align="left">№</TableCell>
@@ -30,14 +111,7 @@ const SessionRecordsTable = ({ sessionRecords, currentStudent }: Props) => {
     </TableRow>
   );
 
-  const sessionRecordsRows = sessionRecords.map((record, index) => {
-    const pair = fetchPairById(record.pairId);
-    if (!pair) throw new Error("Pair not found id " + record.pairId);
-    const opponent =
-      pair.student === currentStudent
-        ? fetchStudentById(pair.opponent)
-        : fetchStudentById(pair.student);
-
+  const sessionRecordsRows = studentSessionRecords.map((record, index) => {
     return (
       <TableRow
         hover
@@ -48,14 +122,10 @@ const SessionRecordsTable = ({ sessionRecords, currentStudent }: Props) => {
           {index + 1}
         </TableCell>
         <TableCell align="left">{record.action}</TableCell>
-        <TableCell align="left">
-          {opponent && (
-            <Link to={`${Endpoints.studentPage}/${opponent.id}`}>
-              {getFullName(opponent)}
-            </Link>
-          )}
-          {opponent === undefined && "unknown"}
-        </TableCell>
+        <SessionRecordsTablePairCell
+          pairId={record.pairId}
+          currentStudentId={record.studentId}
+        />
         <TableCell align="left">
           {record.question ? record.question : ""}
         </TableCell>

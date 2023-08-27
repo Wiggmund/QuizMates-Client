@@ -2,27 +2,33 @@ import React from "react";
 import Container from "@mui/material/Container";
 import { AppBar, GroupCard } from "../../components";
 import { useParams } from "react-router-dom";
-import { fetchGroupById } from "../../data";
-import { Typography } from "@mui/material";
+import { CircularProgress, Typography } from "@mui/material";
+import { useGetGroupByIdQuery } from "../../redux";
+import { GROUP_NOT_FOUND_BY_ID } from "../../model";
+import { ResourceNotFoundException } from "../../exceptions";
 
 type GroupUrlParams = {
   groupId: string;
 };
 
-type Props = {};
-
-const Group = (props: Props) => {
+type GroupProps = {};
+const Group = (props: GroupProps) => {
   const groupId = Number.parseInt(
     useParams<GroupUrlParams>().groupId as string
   );
-  const group = fetchGroupById(groupId);
 
-  if (!group) {
-    return (
-      <Typography variant="h1" color="error">
-        Group with {groupId} NOT FOUND
-      </Typography>
-    );
+  const {
+    data: group,
+    isSuccess,
+    isError,
+    error,
+  } = useGetGroupByIdQuery(groupId);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(GROUP_NOT_FOUND_BY_ID(groupId));
+
+    return <CircularProgress />;
   }
 
   return (

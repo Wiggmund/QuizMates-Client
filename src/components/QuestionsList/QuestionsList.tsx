@@ -1,7 +1,15 @@
-import { Stack, Chip, Typography, Paper } from "@mui/material";
+import {
+  Stack,
+  Chip,
+  Typography,
+  Paper,
+  CircularProgress,
+} from "@mui/material";
 import React from "react";
-import { fetchStudentById } from "../../data";
 import { getFullName } from "../../utils";
+import { ResourceNotFoundException } from "../../exceptions";
+import { STUDENT_NOT_FOUND_BY_ID } from "../../model";
+import { useGetStudentByIdQuery } from "../../redux";
 
 type QuestionsListProps = {
   studentId: number;
@@ -13,8 +21,20 @@ const QuestionsList = ({
   counter,
   questionLimit,
 }: QuestionsListProps) => {
-  const student = fetchStudentById(studentId);
-  if (!student) throw new Error("Student not Found with id " + studentId);
+  const {
+    data: student,
+    isSuccess: isSuccessStudent,
+    isError: isErrorStudent,
+    error: errorStudent,
+  } = useGetStudentByIdQuery(studentId);
+
+  if (!isSuccessStudent) {
+    if (isErrorStudent)
+      throw new ResourceNotFoundException(STUDENT_NOT_FOUND_BY_ID(studentId));
+
+    return <CircularProgress />;
+  }
+
   return (
     <Stack spacing={1}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">

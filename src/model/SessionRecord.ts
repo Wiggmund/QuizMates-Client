@@ -13,11 +13,10 @@ export interface SessionRecord {
 
 export type CreateSessionRecordDto = Omit<SessionRecord, "id">;
 
-// private Long id;
-// private Long sessionId;
-// private Long pairId;
-// private Long studentId;
-// private Long hostId;
-// private Double score;
-// private String hostNotes;
-// private Boolean wasPresent;
+export interface UpdateSessionRecordDto extends SessionRecord {}
+
+export const SESSION_RECS_FETCH_BY_STUDENT_ERROR = (id: number) =>
+  `Failed to fetch session records for student with id [${id}]`;
+
+export const SESSION_RECS_FETCH_BY_SESSION_ERROR = (id: number) =>
+  `Failed to fetch session records for session with id [${id}]`;

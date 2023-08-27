@@ -1,6 +1,6 @@
 import React from "react";
-import { fetchAllHosts, hostsSource } from "../../data";
 import {
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -12,11 +12,19 @@ import {
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
 import { getFullName } from "../../utils";
+import { useGetAllHostsQuery } from "../../redux";
+import { ResourceNotFoundException } from "../../exceptions";
+import { ALL_HOSTS_FETCH_ERROR } from "../../model/Host";
 
-type Props = {};
+type HostsTableProps = {};
+const HostsTable = (props: HostsTableProps) => {
+  const { data: hosts, isSuccess, isError, error } = useGetAllHostsQuery("");
 
-const HostsTable = (props: Props) => {
-  const hosts = fetchAllHosts();
+  if (!isSuccess) {
+    if (isError) throw new ResourceNotFoundException(ALL_HOSTS_FETCH_ERROR());
+
+    return <CircularProgress />;
+  }
 
   const hostsRowsHeaders = (
     <TableRow>
@@ -24,7 +32,8 @@ const HostsTable = (props: Props) => {
       <TableCell align="left">Full Name</TableCell>
     </TableRow>
   );
-
+  console.log("Hosts table");
+  console.log(hosts);
   const hostsRows = hosts.map((host) => (
     <TableRow
       hover

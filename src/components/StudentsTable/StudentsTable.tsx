@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -10,22 +11,62 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
-import { StudentWithGroup } from "../../model";
+import { getFullName, getGroupNameOrUnknown } from "../../utils";
+import { useGetGroupByIdQuery, useGetStudentByIdQuery } from "../../redux";
+import { GROUP_NOT_FOUND_BY_ID, STUDENT_NOT_FOUND_BY_ID } from "../../model";
+import { ResourceNotFoundException } from "../../exceptions";
 
-type Props = {
-  students: StudentWithGroup[];
+type StudentsTableGroupCellProps = {
+  groupId: number;
+};
+const StudentsTableGroupCell = ({ groupId }: StudentsTableGroupCellProps) => {
+  const {
+    data: group,
+    isSuccess,
+    isError,
+    error,
+  } = useGetGroupByIdQuery(groupId);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(GROUP_NOT_FOUND_BY_ID(groupId));
+
+    return <CircularProgress />;
+  }
+
+  return (
+    <TableCell align="left">
+      {group ? (
+        <Link to={`${Endpoints.groupPage}/${group.id}`}>{group.name}</Link>
+      ) : (
+        getGroupNameOrUnknown(group)
+      )}
+    </TableCell>
+  );
 };
 
-const StudentsTable = ({ students }: Props) => {
-  const studentsRowHeaders = (
-    <TableRow>
-      <TableCell align="left">Student ID</TableCell>
-      <TableCell align="left">Full name</TableCell>
-      <TableCell align="left">Group</TableCell>
-    </TableRow>
-  );
+type StudentsTableStudentRecordProps = {
+  studentId: number;
+};
+const StudentsTableStudentRecord = ({
+  studentId,
+}: StudentsTableStudentRecordProps) => {
+  const {
+    data: student,
+    isSuccess,
+    isError,
+    error,
+  } = useGetStudentByIdQuery(studentId);
 
-  const studentsRows = students.map((student) => (
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(STUDENT_NOT_FOUND_BY_ID(studentId));
+
+    return <CircularProgress />;
+  }
+  console.log("StudentsTableStudentRecord");
+  console.log(student);
+  return (
     <TableRow
       hover
       key={student.id}
@@ -34,18 +75,28 @@ const StudentsTable = ({ students }: Props) => {
       <TableCell align="left">{student.id}</TableCell>
       <TableCell component="th" scope="row">
         <Link to={`${Endpoints.studentPage}/${student.id}`}>
-          {`${student.firstName} ${student.lastName}`}
+          {getFullName(student)}
         </Link>
       </TableCell>
-      <TableCell align="left">
-        {student.group && (
-          <Link to={`${Endpoints.groupPage}/${student.group.id}`}>
-            {student.group.name}
-          </Link>
-        )}
-        {student.group === undefined && "unknown"}
-      </TableCell>
+      <StudentsTableGroupCell groupId={student.groupId} />
     </TableRow>
+  );
+};
+
+type StudentsTableProps = {
+  studentsIds: number[];
+};
+const StudentsTable = ({ studentsIds }: StudentsTableProps) => {
+  const studentsRowHeaders = (
+    <TableRow>
+      <TableCell align="left">Student ID</TableCell>
+      <TableCell align="left">Full name</TableCell>
+      <TableCell align="left">Group</TableCell>
+    </TableRow>
+  );
+
+  const studentsRows = studentsIds.map((studentId) => (
+    <StudentsTableStudentRecord studentId={studentId} />
   ));
 
   return (

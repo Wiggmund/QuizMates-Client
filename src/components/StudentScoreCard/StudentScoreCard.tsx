@@ -1,16 +1,28 @@
-import { Stack, Typography } from "@mui/material";
+import { CircularProgress, Stack, Typography } from "@mui/material";
 import React from "react";
-import { fetchStudentById } from "../../data";
 import { getFullName } from "../../utils";
+import { useGetStudentByIdQuery } from "../../redux";
+import { ResourceNotFoundException } from "../../exceptions";
+import { STUDENT_NOT_FOUND_BY_ID } from "../../model";
 
 type StudentScoreCardProps = {
   studentId: number;
   score: number;
 };
 const StudentScoreCard = ({ studentId, score = 0 }: StudentScoreCardProps) => {
-  const student = fetchStudentById(studentId);
+  const {
+    data: student,
+    isSuccess,
+    isError,
+    error,
+  } = useGetStudentByIdQuery(studentId);
 
-  if (!student) throw new Error("Student not found with id " + studentId);
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(STUDENT_NOT_FOUND_BY_ID(studentId));
+
+    return <CircularProgress />;
+  }
 
   return (
     <Stack direction="row" spacing={1}>

@@ -6,15 +6,24 @@ import {
   HostsTable,
   StudentsTable,
 } from "../../components";
-import { Box, Grid, Typography, styled, Button } from "@mui/material";
 import {
-  fetchStudentsWithGroup,
-  groupSource,
-  hostsSource,
-  studentsSource,
-} from "../../data";
+  Box,
+  Grid,
+  Typography,
+  styled,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
+import {
+  useGetAllGroupsQuery,
+  useGetAllHostsQuery,
+  useGetAllStudentsQuery,
+} from "../../redux";
+import { ALL_GROUPS_FETCH_ERROR, ALL_STUDENTS_FETCH_ERROR } from "../../model";
+import { ALL_HOSTS_FETCH_ERROR } from "../../model/Host";
+import { ResourceNotFoundException } from "../../exceptions";
 
 const SimpleContainer = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -26,10 +35,44 @@ const SimpleContainer = styled(Box)(({ theme }) => ({
 type Props = {};
 
 const Home = (props: Props) => {
-  const studentsAmount = studentsSource.length;
-  const groupsAmount = groupSource.length;
-  const hostsAmount = hostsSource.length;
-  const studentsWithGroups = fetchStudentsWithGroup();
+  const {
+    data: hosts,
+    isSuccess: isSuccessHost,
+    isError: isErrorHost,
+    error: errorHost,
+  } = useGetAllHostsQuery("");
+  const {
+    data: groups,
+    isSuccess: isSuccessGroup,
+    isError: isErrorGroup,
+    error: errorGroup,
+  } = useGetAllGroupsQuery("");
+  const {
+    data: students,
+    isSuccess: isSuccessStudent,
+    isError: isErrorStudent,
+    error: errorStudent,
+  } = useGetAllStudentsQuery("");
+
+  if (!isSuccessStudent || !isSuccessHost || !isSuccessGroup) {
+    if (isErrorStudent)
+      throw new ResourceNotFoundException(ALL_STUDENTS_FETCH_ERROR());
+    if (isErrorGroup)
+      throw new ResourceNotFoundException(ALL_GROUPS_FETCH_ERROR());
+    if (isErrorHost)
+      throw new ResourceNotFoundException(ALL_HOSTS_FETCH_ERROR());
+
+    return <CircularProgress />;
+  }
+
+  console.log("Home page");
+  console.log(students);
+  console.log(hosts);
+  console.log(groups);
+  const studentsAmount = students.length;
+  const groupsAmount = groups.length;
+  const hostsAmount = hosts.length;
+  const studentsIds = students.map((student) => student.id);
 
   return (
     <Container maxWidth="lg">
@@ -80,7 +123,7 @@ const Home = (props: Props) => {
               {studentsAmount}
             </Typography>
           </SimpleContainer>
-          <StudentsTable students={studentsWithGroups} />
+          <StudentsTable studentsIds={studentsIds} />
         </Grid>
       </Grid>
     </Container>

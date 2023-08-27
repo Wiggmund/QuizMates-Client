@@ -15,4 +15,8 @@ export {
   useGetAllGroupStudentsQuery,
   useGetAllSessionRecordsByStudentIdQuery,
   useGetAllSessionRecordsBySessionIdQuery,
+  useGenerateRandomPairsMutation,
+  useUpdateSessionMutation,
+  useCreateSessionRecordMutation,
+  useCreateSessionMutation,
 } from "./features/api/apiSlice";

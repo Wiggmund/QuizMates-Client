@@ -2,8 +2,10 @@ import React from "react";
 import Container from "@mui/material/Container";
 import { AppBar, SessionCard, SessionRecordAccordion } from "../../components";
 import { useParams } from "react-router-dom";
-import { fetchSessionById } from "../../data";
-import { Stack, Typography } from "@mui/material";
+import { CircularProgress, Stack, Typography } from "@mui/material";
+import { useGetSessionByIdQuery } from "../../redux";
+import { SESSION_NOT_FOUND_BY_ID } from "../../model";
+import { ResourceNotFoundException } from "../../exceptions";
 
 type SessionUrlParams = {
   sessionId: string;
@@ -15,14 +17,19 @@ const Session = (props: Props) => {
   const sessionId = Number.parseInt(
     useParams<SessionUrlParams>().sessionId as string
   );
-  const session = fetchSessionById(sessionId);
 
-  if (!session) {
-    return (
-      <Typography variant="h1" color="error">
-        Session with {sessionId} NOT FOUND
-      </Typography>
-    );
+  const {
+    data: session,
+    isSuccess,
+    isError,
+    error,
+  } = useGetSessionByIdQuery(sessionId);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(SESSION_NOT_FOUND_BY_ID(sessionId));
+
+    return <CircularProgress />;
   }
 
   return (
