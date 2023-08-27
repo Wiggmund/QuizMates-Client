@@ -5,7 +5,7 @@ export interface Pair {
 }
 
 export interface GenerateRandomPairsDto {
-  groups: number[];
+  groupsIds: number[];
   absentStudents: number[];
   byAllStudents: boolean;
 }

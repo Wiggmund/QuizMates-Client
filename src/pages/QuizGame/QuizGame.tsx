@@ -78,7 +78,7 @@ const QuizGame = (props: Props) => {
 
   let pairs: Pair[] = [];
   generateRandomPairs({
-    groups: quiz?.groups.map((s) => s.id) || [],
+    groupsIds: quiz?.groups.map((s) => s.id) || [],
     absentStudents: quiz?.absentStudents.map((s) => s.id) || [],
     byAllStudents: false,
   })
