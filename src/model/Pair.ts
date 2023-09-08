@@ -1,7 +1,7 @@
 export interface Pair {
   id: number;
-  student: number;
-  opponent: number;
+  studentA: number;
+  studentB: number;
 }
 
 export interface GenerateRandomPairsDto {

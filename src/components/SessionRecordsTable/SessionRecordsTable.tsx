@@ -74,11 +74,11 @@ const SessionRecordsTablePairCell = ({
     return null;
   }
 
-  if (pair.student === currentStudentId) {
-    return <SessionRecordsTableOpponentCell opponentId={pair.opponent} />;
+  if (pair.studentA === currentStudentId) {
+    return <SessionRecordsTableOpponentCell opponentId={pair.studentB} />;
   }
 
-  return <SessionRecordsTableOpponentCell opponentId={pair.student} />;
+  return <SessionRecordsTableOpponentCell opponentId={pair.studentA} />;
 };
 
 type SessionRecordsTableProps = {

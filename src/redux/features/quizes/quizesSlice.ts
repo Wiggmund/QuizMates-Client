@@ -8,6 +8,7 @@ import {
   CreateSessionRecordDto,
   Group,
   Host,
+  Pair,
   Quiz,
   Session,
   Student,
@@ -35,6 +36,7 @@ const quizesSlice = createSlice({
       title: "",
       description: "",
     },
+    randomPairs: [] as Pair[],
   }),
   reducers: {
     adjustSessionConfig(state, action: PayloadAction<SessionConfig>) {
@@ -109,6 +111,10 @@ const quizesSlice = createSlice({
         quiz.status = data;
       }
     },
+    setRandomPairs(state, action: PayloadAction<QuizPayload<Pair[]>>) {
+      const { quizId, data } = action.payload;
+      state.randomPairs = data;
+    },
   },
 });
 
@@ -131,4 +137,5 @@ export const {
   addPresentStudents,
   addCreateSessionRecordDto,
   adjustSessionConfig,
+  setRandomPairs,
 } = quizesSlice.actions;

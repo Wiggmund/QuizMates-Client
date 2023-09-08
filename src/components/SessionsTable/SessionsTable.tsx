@@ -58,9 +58,7 @@ const SessionTableRecord = ({ sessionId }: SessionTableRecordProps) => {
     return <CircularProgress />;
   }
 
-  const formattedDate = session.date
-    ? session.date.toLocaleDateString()
-    : "unknown";
+  const formattedDate = session.date ? `${session.date}` : "unknown";
 
   return (
     <TableRow

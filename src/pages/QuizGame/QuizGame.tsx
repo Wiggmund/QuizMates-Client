@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Container from "@mui/material/Container";
 import { Stack, Button, TextField, CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2"; // Grid version 2
@@ -13,7 +13,10 @@ import {
 } from "../../model";
 import { PairCard, QuestionsList, StudentScoreCard } from "../../components";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { selectQuizById } from "../../redux/features/quizes/quizesSlice";
+import {
+  selectQuizById,
+  setRandomPairs,
+} from "../../redux/features/quizes/quizesSlice";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
 import {
@@ -41,6 +44,7 @@ const QuizGame = (props: Props) => {
   ] = useGenerateRandomPairsMutation();
   const [updateSession] = useUpdateSessionMutation();
   const [createSessionRecord] = useCreateSessionRecordMutation();
+  const dispatch = useAppDispatch();
 
   const {
     data: allStudents,
@@ -75,16 +79,31 @@ const QuizGame = (props: Props) => {
   const [sessionRecords, setSessionRecords] = useState<
     CreateSessionRecordDto[]
   >([]);
+  // const [pairs, setPairs] = useState<Pair[]>([]);
+  let pairs: Pair[] = useAppSelector((state) => state.quizes.randomPairs);
 
-  let pairs: Pair[] = [];
-  generateRandomPairs({
-    groupsIds: quiz?.groups.map((s) => s.id) || [],
-    absentStudents: quiz?.absentStudents.map((s) => s.id) || [],
-    byAllStudents: false,
-  })
-    .unwrap()
-    .then((data) => (pairs = [...data.pairs]));
-
+  useEffect(() => {
+    const generatePairs = async () => {
+      if (!quiz) return;
+      const data = await generateRandomPairs({
+        groupsIds: quiz.groups.map((s) => s.id) || [],
+        absentStudents: quiz.absentStudents.map((s) => s.id) || [],
+        byAllStudents: false,
+      }).unwrap();
+      console.log(data);
+      dispatch(
+        setRandomPairs({
+          data: data.pairs,
+          quizId: quiz.id,
+        })
+      );
+    };
+    generatePairs();
+  }, [quiz, dispatch, generateRandomPairs]);
+  console.log("PAIRS");
+  console.log(pairs);
+  console.log("PAIR");
+  console.log(currentPair);
   if (!isSuccessStudent || !isSuccessGenerate) {
     if (isErrorStudent)
       throw new ResourceNotFoundException(ALL_STUDENTS_FETCH_ERROR());
@@ -97,21 +116,25 @@ const QuizGame = (props: Props) => {
   allStudents.forEach((st) => (studentsDict[st.id] = st));
 
   const questionsPerSession = 3;
-  const studentsIds = pairs.flatMap((pair) => [pair.student, pair.opponent]);
+  const studentsIds = pairs.flatMap((pair) => [pair.studentA, pair.studentB]);
   const isQuizFinished = counter.current === pairs.length;
 
   const takeNextPair = () => {
     const pair = pairs[counter.current];
+    console.log("TAKE NEXR PAIR");
+    console.log(pair);
+    console.log("Counter");
+    console.log(counter.current);
     setCurrentPair(pair);
 
-    const studentA = studentsDict[pair.student];
-    const studentB = studentsDict[pair.opponent];
+    const studentA = studentsDict[pair.studentA];
+    const studentB = studentsDict[pair.studentB];
     setStudentA(studentA);
     setStudentB(studentB);
 
     setPassedPairs((prev) => [...prev, pair.id]);
-    setCurrentAsker(pair.student);
-    setCurrentAnswerer(pair.opponent);
+    setCurrentAsker(pair.studentA);
+    setCurrentAnswerer(pair.studentB);
     setPairFinish(false);
     setQuestionCounter(1);
     setAsker("student");
@@ -249,8 +272,8 @@ const QuizGame = (props: Props) => {
           <Stack spacing={2}>
             {pairs.map((pair) => (
               <PairCard
-                studentId={pair.student}
-                opponentId={pair.opponent}
+                studentId={pair.studentA}
+                opponentId={pair.studentB}
                 key={pair.id}
                 current={pair.id === currentPair?.id}
                 passed={
@@ -267,13 +290,13 @@ const QuizGame = (props: Props) => {
                 <>
                   {asker === "student" ? (
                     <QuestionsList
-                      studentId={currentPair.student}
+                      studentId={currentPair.studentA}
                       counter={questionCounter}
                       questionLimit={questionsPerSession}
                     />
                   ) : (
                     <QuestionsList
-                      studentId={currentPair.opponent}
+                      studentId={currentPair.studentB}
                       counter={questionCounter}
                       questionLimit={questionsPerSession}
                     />

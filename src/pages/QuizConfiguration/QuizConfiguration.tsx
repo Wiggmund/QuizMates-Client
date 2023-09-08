@@ -302,7 +302,8 @@ const QuizConfiguration = (props: Props) => {
     dispatch(
       addPresentStudents({ quizId: currentQuizId, data: presentStudents })
     );
-
+    console.log("HOSTS");
+    console.log(hosts);
     const currentSessionId = await createSession({
       title,
       description,

@@ -8,4 +8,5 @@ export {
   addAbsentStudents,
   addPresentStudents,
   addCreateSessionRecordDto,
+  setRandomPairs,
 } from "./quizes/quizesSlice";
