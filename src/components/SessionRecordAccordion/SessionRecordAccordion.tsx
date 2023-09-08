@@ -35,8 +35,10 @@ import {
   useGetAllSessionRecordsBySessionIdQuery,
   useGetAllSessionRecordsByStudentIdQuery,
   useGetHostByIdQuery,
+  useGetHostBySessionIdQuery,
 } from "../../redux";
 import { ResourceNotFoundException } from "../../exceptions";
+import { HOST_NOT_FOUND_BY_SESSION } from "../../model/Host";
 
 const getScore = (sessionRecords: SessionRecord[]): number =>
   sessionRecords.reduce((acc, record) => acc + record.score, 0);
@@ -133,11 +135,13 @@ const SessionAccordion = ({
     isSuccess,
     isError,
     error,
-  } = useGetHostByIdQuery(session.host);
+  } = useGetHostBySessionIdQuery(session.id);
 
   if (!isSuccess) {
     if (isError)
-      throw new ResourceNotFoundException(HOST_NOT_FOUND_BY_ID(session.host));
+      throw new ResourceNotFoundException(
+        HOST_NOT_FOUND_BY_SESSION(session.id)
+      );
 
     return <CircularProgress />;
   }
@@ -158,10 +162,10 @@ const SessionAccordion = ({
         >
           <Stack direction="row" spacing={2} alignItems="center">
             <Typography>{getSessionTitleOrUnknown(session)}</Typography>
-            <SessionAccordionHostLink hostId={session.host} />
+            <SessionAccordionHostLink hostId={host.id} />
           </Stack>
           <Typography variant="caption" color="initial">
-            {session.date.toLocaleDateString()}
+            {`${session.date}`}
           </Typography>
         </Stack>
       </AccordionSummary>

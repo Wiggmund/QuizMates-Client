@@ -170,9 +170,9 @@ const QuizGame = (props: Props) => {
     function addSessionRecords() {
       if (currentAsker && currentAnswerer && currentPair) {
         const recordStudentA: CreateSessionRecordDto = {
-          sessionId: 1,
+          sessionId: currentSessionId,
           hostId: 1,
-          action: "ask",
+          action: "ASK",
           studentId: currentAsker,
           score: studentsScores.current[currentAsker] || 0,
           pairId: currentPair.id,
@@ -181,9 +181,9 @@ const QuizGame = (props: Props) => {
           question: "Some question",
         };
         const recordStudentB: CreateSessionRecordDto = {
-          sessionId: 1,
+          sessionId: currentSessionId,
           hostId: 1,
-          action: "answer",
+          action: "ANSWER",
           studentId: currentAnswerer,
           score: studentsScores.current[currentAnswerer] || 0,
           pairId: currentPair.id,

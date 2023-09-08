@@ -3,7 +3,7 @@ import { ALL_SESSION_FETCH_ERROR, Host } from "../../model";
 import { getFullName } from "../../utils";
 import { CircularProgress, Stack, Typography } from "@mui/material";
 import SessionsTable from "../SessionsTable/SessionsTable";
-import { useGetAllSessionsQuery } from "../../redux";
+import { useGetAllSessionsQuery, useGetHostSessionsQuery } from "../../redux";
 import { ResourceNotFoundException } from "../../exceptions";
 
 type Props = {
@@ -12,11 +12,11 @@ type Props = {
 
 const HostCard = ({ host }: Props) => {
   const {
-    data: allSessions,
+    data: sessions,
     isSuccess,
     isError,
     error,
-  } = useGetAllSessionsQuery("");
+  } = useGetHostSessionsQuery(host.id);
 
   if (!isSuccess) {
     if (isError) throw new ResourceNotFoundException(ALL_SESSION_FETCH_ERROR());
@@ -24,7 +24,6 @@ const HostCard = ({ host }: Props) => {
     return <CircularProgress />;
   }
 
-  const sessions = allSessions.filter((session) => session.host === host.id);
   const sessionsIds = sessions.map((session) => session.id);
   const hostFullName = getFullName(host);
 

@@ -23,6 +23,9 @@ export const apiSlice = createApi({
     getHostById: builder.query<Host, number>({
       query: (hostId) => API.hosts.getById(hostId),
     }),
+    getHostBySessionId: builder.query<Host, number>({
+      query: (sessionId) => API.hosts.getHostBySessionId(sessionId),
+    }),
 
     getAllGroups: builder.query<Group[], string>({
       query: () => API.groups.getAll,
@@ -63,6 +66,9 @@ export const apiSlice = createApi({
     }),
     getSessionById: builder.query<Session, number>({
       query: (sessionId) => API.sessions.getById(sessionId),
+    }),
+    getHostSessions: builder.query<Session[], number>({
+      query: (hostId) => API.sessions.getHostSessions(hostId),
     }),
     createSession: builder.mutation<number, CreateSessionDto>({
       query: (dto) => ({
@@ -120,6 +126,9 @@ export const {
 
   useGetAllSessionRecordsByStudentIdQuery,
   useGetAllSessionRecordsBySessionIdQuery,
+
+  useGetHostSessionsQuery,
+  useGetHostBySessionIdQuery,
 
   useGenerateRandomPairsMutation,
   useUpdateSessionMutation,

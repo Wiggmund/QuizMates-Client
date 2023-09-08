@@ -7,6 +7,12 @@ export const API = {
   hosts: {
     getAll: "/hosts",
     getById: (hostId: number) => `/hosts?hostId=${hostId}`,
+    getHostBySessionId: (sessionId: number) => {
+      const url = `/session?sessionId=${sessionId}`;
+      console.log("URL");
+      console.log(url);
+      return url;
+    },
     create: "/hosts",
     update: "/hosts",
     deleteById: "/hosts",
@@ -38,6 +44,7 @@ export const API = {
   sessions: {
     getAll: "/sessions",
     getById: (sessionId: number) => `/sessions?sessionId=${sessionId}`,
+    getHostSessions: (hostId: number) => `/sessions?hostId=${hostId}`,
     create: "/sessions",
     update: "/sessions",
     deleteById: "/sessions",

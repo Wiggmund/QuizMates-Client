@@ -11,10 +11,15 @@ import {
 } from "@mui/material";
 import { Endpoints } from "../../constants";
 import { Link } from "react-router-dom";
-import { useGetHostByIdQuery, useGetSessionByIdQuery } from "../../redux";
+import {
+  useGetHostByIdQuery,
+  useGetHostBySessionIdQuery,
+  useGetSessionByIdQuery,
+} from "../../redux";
 import { getFullName } from "../../utils";
 import { ResourceNotFoundException } from "../../exceptions";
 import { HOST_NOT_FOUND_BY_ID, SESSION_NOT_FOUND_BY_ID } from "../../model";
+import { HOST_NOT_FOUND_BY_SESSION } from "../../model/Host";
 
 type SessionTableHostCellsProps = {
   hostId: number;
@@ -51,15 +56,29 @@ const SessionTableRecord = ({ sessionId }: SessionTableRecordProps) => {
     error,
   } = useGetSessionByIdQuery(sessionId);
 
-  if (!isSuccess) {
+  const {
+    data: host,
+    isSuccess: isSuccessHost,
+    isError: isErrorHost,
+    error: errorHost,
+  } = useGetHostBySessionIdQuery(sessionId);
+
+  if (!isSuccess || !isSuccessHost) {
     if (isError)
       throw new ResourceNotFoundException(SESSION_NOT_FOUND_BY_ID(sessionId));
+
+    if (isErrorHost) {
+      throw new ResourceNotFoundException(HOST_NOT_FOUND_BY_SESSION(sessionId));
+    }
 
     return <CircularProgress />;
   }
 
   const formattedDate = session.date ? `${session.date}` : "unknown";
-
+  console.log("SESSION");
+  console.log(session);
+  console.log("HOST");
+  console.log(host);
   return (
     <TableRow
       hover
@@ -73,7 +92,7 @@ const SessionTableRecord = ({ sessionId }: SessionTableRecordProps) => {
           {session.title}
         </Link>
       </TableCell>
-      <SessionTableHostCell hostId={session.host} />
+      <SessionTableHostCell hostId={host.id} />
       <TableCell align="left">{formattedDate}</TableCell>
     </TableRow>
   );

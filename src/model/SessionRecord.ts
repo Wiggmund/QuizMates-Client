@@ -7,7 +7,7 @@ export interface SessionRecord {
   hostNotes?: string;
   wasPresent: boolean;
   pairId: number;
-  action: "answer" | "ask";
+  action: "ANSWER" | "ASK";
   question?: string;
 }
 

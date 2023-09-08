@@ -15,6 +15,8 @@ export {
   useGetAllGroupStudentsQuery,
   useGetAllSessionRecordsByStudentIdQuery,
   useGetAllSessionRecordsBySessionIdQuery,
+  useGetHostSessionsQuery,
+  useGetHostBySessionIdQuery,
   useGenerateRandomPairsMutation,
   useUpdateSessionMutation,
   useCreateSessionRecordMutation,

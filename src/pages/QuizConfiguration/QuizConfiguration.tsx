@@ -311,7 +311,8 @@ const QuizConfiguration = (props: Props) => {
       date: new Date(),
       status: SessionStatus.CREATED,
     }).unwrap();
-
+    console.log("currentSessionId");
+    console.log(currentSessionId);
     dispatch(setCurrentSession(currentSessionId));
 
     // await updateSession({
