@@ -8,8 +8,10 @@ import {
   Host,
   Pair,
   Session,
+  SessionGroupScoreParams,
   SessionRecord,
   SessionRecordsByStudentAndSessionParams,
+  SessionStudentScoreParams,
   Student,
   UpdateSessionDto,
 } from "../../../model";
@@ -70,6 +72,14 @@ export const apiSlice = createApi({
     }),
     getHostSessions: builder.query<Session[], number>({
       query: (hostId) => API.sessions.getHostSessions(hostId),
+    }),
+    getSessionStudentScore: builder.query<number, SessionStudentScoreParams>({
+      query: ({ sessionId, studentId }) =>
+        API.sessions.getSessionStudentScore(sessionId, studentId),
+    }),
+    getSessionGroupScore: builder.query<number, SessionGroupScoreParams>({
+      query: ({ sessionId, groupId }) =>
+        API.sessions.getSessionGroupScore(sessionId, groupId),
     }),
     createSession: builder.mutation<Session, CreateSessionDto>({
       query: (dto) => ({
@@ -138,6 +148,8 @@ export const {
   useGetHostSessionsQuery,
   useGetHostBySessionIdQuery,
   useGetSessionRecordsByStudentIdAndSessionIdQuery,
+  useGetSessionStudentScoreQuery,
+  useGetSessionGroupScoreQuery,
 
   useGenerateRandomPairsMutation,
   useUpdateSessionMutation,

@@ -24,6 +24,15 @@ export type CreateSessionDto = Omit<
   "id" | "bestStudent" | "bestGroup"
 >;
 
+export interface SessionStudentScoreParams {
+  sessionId: number;
+  studentId: number;
+}
+export interface SessionGroupScoreParams {
+  sessionId: number;
+  groupId: number;
+}
+
 export interface UpdateSessionDto extends Session {}
 
 export const SESSION_NOT_FOUND_BY_ID = (id: number) =>

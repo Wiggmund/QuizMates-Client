@@ -18,7 +18,13 @@ export {
   ALL_GROUPS_FETCH_ERROR,
 } from "./Group";
 
-export type { Session, CreateSessionDto, UpdateSessionDto } from "./Session";
+export type {
+  Session,
+  CreateSessionDto,
+  UpdateSessionDto,
+  SessionStudentScoreParams,
+  SessionGroupScoreParams,
+} from "./Session";
 export {
   SessionStatus,
   SESSION_NOT_FOUND_BY_ID,

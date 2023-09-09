@@ -45,6 +45,10 @@ export const API = {
     getAll: "/sessions",
     getById: (sessionId: number) => `/sessions?sessionId=${sessionId}`,
     getHostSessions: (hostId: number) => `/sessions?hostId=${hostId}`,
+    getSessionStudentScore: (sessionId: number, studentId: number) =>
+      `/sessions?sessionId=${sessionId}&studentId=${studentId}&score=test`,
+    getSessionGroupScore: (sessionId: number, groupId: number) =>
+      `/sessions?sessionId=${sessionId}&groupId=${groupId}&score=test`,
     create: "/sessions",
     update: "/sessions",
     deleteById: "/sessions",
