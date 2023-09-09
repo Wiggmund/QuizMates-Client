@@ -55,6 +55,7 @@ const QuizGame = (props: Props) => {
 
   const counter = useRef(0);
   const studentsScores = useRef<StudentsScores>({});
+  const studentsScoresForDtos = useRef<StudentsScores>({});
   const [currentPair, setCurrentPair] = useState<Pair>();
   const [questionCounter, setQuestionCounter] = useState(1);
   const [asker, setAsker] = useState<"student" | "opponent">("student");
@@ -100,10 +101,7 @@ const QuizGame = (props: Props) => {
     };
     generatePairs();
   }, [quiz, dispatch, generateRandomPairs]);
-  console.log("PAIRS");
-  console.log(pairs);
-  console.log("PAIR");
-  console.log(currentPair);
+
   if (!isSuccessStudent || !isSuccessGenerate) {
     if (isErrorStudent)
       throw new ResourceNotFoundException(ALL_STUDENTS_FETCH_ERROR());
@@ -174,7 +172,7 @@ const QuizGame = (props: Props) => {
           hostId: 1,
           action: "ASK",
           studentId: currentAsker,
-          score: studentsScores.current[currentAsker] || 0,
+          score: studentsScoresForDtos.current[currentAsker] || 0,
           pairId: currentPair.id,
           wasPresent: true,
           hostNotes: "Some notes",
@@ -185,13 +183,15 @@ const QuizGame = (props: Props) => {
           hostId: 1,
           action: "ANSWER",
           studentId: currentAnswerer,
-          score: studentsScores.current[currentAnswerer] || 0,
+          score: studentsScoresForDtos.current[currentAnswerer] || 0,
           pairId: currentPair.id,
           wasPresent: true,
           hostNotes: "Some notes",
           question: "Some question",
         };
         setSessionRecords((prev) => [...prev, recordStudentA, recordStudentB]);
+        studentsScoresForDtos.current[currentAsker] = 0;
+        studentsScoresForDtos.current[currentAnswerer] = 0;
       }
     }
   };
@@ -216,6 +216,7 @@ const QuizGame = (props: Props) => {
       const currentStudentId = currentAsker;
       const oldValue = studentsScores.current[currentStudentId] || 0;
       studentsScores.current[currentStudentId] = oldValue + score;
+      studentsScoresForDtos.current[currentStudentId] = score;
       takeNextQuestion();
     }
   };
@@ -224,6 +225,7 @@ const QuizGame = (props: Props) => {
       const currentStudentId = currentAnswerer;
       const oldValue = studentsScores.current[currentStudentId] || 0;
       studentsScores.current[currentStudentId] = oldValue + score;
+      studentsScoresForDtos.current[currentStudentId] = score;
       takeNextQuestion();
     }
   };
@@ -263,7 +265,6 @@ const QuizGame = (props: Props) => {
     sessionRecords.forEach((recordDto) => createSessionRecord(recordDto));
   };
 
-  console.log(sessionRecords);
   return (
     <Container maxWidth="lg" sx={{ height: "100vh" }}>
       <h1>Quiz Game</h1>
