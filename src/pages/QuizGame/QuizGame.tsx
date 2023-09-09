@@ -74,9 +74,7 @@ const QuizGame = (props: Props) => {
   const quiz = useAppSelector((state) =>
     selectQuizById(state, state.quizes.currentQuizId)
   );
-  const currentSessionId = useAppSelector(
-    (state) => state.quizes.currentSessionId
-  );
+  const currentSession = useAppSelector((state) => state.quizes.currentSession);
   const [sessionRecords, setSessionRecords] = useState<
     CreateSessionRecordDto[]
   >([]);
@@ -91,7 +89,6 @@ const QuizGame = (props: Props) => {
         absentStudents: quiz.absentStudents.map((s) => s.id) || [],
         byAllStudents: false,
       }).unwrap();
-      console.log(data);
       dispatch(
         setRandomPairs({
           data: data.pairs,
@@ -119,10 +116,6 @@ const QuizGame = (props: Props) => {
 
   const takeNextPair = () => {
     const pair = pairs[counter.current];
-    console.log("TAKE NEXR PAIR");
-    console.log(pair);
-    console.log("Counter");
-    console.log(counter.current);
     setCurrentPair(pair);
 
     const studentA = studentsDict[pair.studentA];
@@ -168,7 +161,7 @@ const QuizGame = (props: Props) => {
     function addSessionRecords() {
       if (currentAsker && currentAnswerer && currentPair) {
         const recordStudentA: CreateSessionRecordDto = {
-          sessionId: currentSessionId,
+          sessionId: currentSession.id,
           hostId: 1,
           action: "ASK",
           studentId: currentAsker,
@@ -179,7 +172,7 @@ const QuizGame = (props: Props) => {
           question: "Some question",
         };
         const recordStudentB: CreateSessionRecordDto = {
-          sessionId: currentSessionId,
+          sessionId: currentSession.id,
           hostId: 1,
           action: "ANSWER",
           studentId: currentAnswerer,
@@ -249,14 +242,13 @@ const QuizGame = (props: Props) => {
           (acc, next) => acc + studentsScores.current[next.id],
           0
         );
-
         return { groupId: group.id, score: totalGroupScore };
       })
       .reduce((prev, next) => (prev.score > next.score ? prev : next)).groupId;
 
-    if (quiz.session) {
+    if (currentSession) {
       updateSession({
-        ...quiz.session,
+        ...currentSession,
         bestStudent,
         bestGroup,
         status: SessionStatus.FINISHED,

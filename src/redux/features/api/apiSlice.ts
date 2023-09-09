@@ -71,7 +71,7 @@ export const apiSlice = createApi({
     getHostSessions: builder.query<Session[], number>({
       query: (hostId) => API.sessions.getHostSessions(hostId),
     }),
-    createSession: builder.mutation<number, CreateSessionDto>({
+    createSession: builder.mutation<Session, CreateSessionDto>({
       query: (dto) => ({
         url: API.sessions.create,
         method: "POST",

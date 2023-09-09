@@ -304,21 +304,19 @@ const QuizConfiguration = (props: Props) => {
     );
     console.log("HOSTS");
     console.log(hosts);
-    const currentSessionId = await createSession({
+    const currentSession = await createSession({
       title,
       description,
       host: hosts[0].id,
       date: new Date(),
       status: SessionStatus.CREATED,
     }).unwrap();
-    console.log("currentSessionId");
-    console.log(currentSessionId);
-    dispatch(setCurrentSession(currentSessionId));
+    dispatch(setCurrentSession(currentSession));
 
-    // await updateSession({
-    //   ...currentSession,
-    //   status: SessionStatus.STARTED
-    // });
+    await updateSession({
+      ...currentSession,
+      status: SessionStatus.STARTED,
+    });
   };
 
   return (

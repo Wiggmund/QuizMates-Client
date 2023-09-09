@@ -31,7 +31,7 @@ const quizesSlice = createSlice({
   name: "quizes",
   initialState: quizAdapter.getInitialState({
     currentQuizId: "",
-    currentSessionId: -1,
+    currentSession: {} as Session,
     sessionConfig: {
       title: "",
       description: "",
@@ -46,8 +46,8 @@ const quizesSlice = createSlice({
     setCurrentQuiz(state, action: PayloadAction<string>) {
       state.currentQuizId = action.payload;
     },
-    setCurrentSession(state, action: PayloadAction<number>) {
-      state.currentSessionId = action.payload;
+    setCurrentSession(state, action: PayloadAction<Session>) {
+      state.currentSession = action.payload;
     },
     createQuiz(state, action: PayloadAction<Quiz>) {
       quizAdapter.upsertOne(state, action.payload);
