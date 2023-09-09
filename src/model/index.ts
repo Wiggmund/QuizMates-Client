@@ -29,10 +29,12 @@ export type {
   SessionRecord,
   CreateSessionRecordDto,
   UpdateSessionRecordDto,
+  SessionRecordsByStudentAndSessionParams,
 } from "./SessionRecord";
 export {
   SESSION_RECS_FETCH_BY_STUDENT_ERROR,
   SESSION_RECS_FETCH_BY_SESSION_ERROR,
+  SESSION_RECS_FETCH_BY_SESSION_AND_STUDENT_ERROR,
 } from "./SessionRecord";
 
 export type { Quiz } from "./Quiz";

@@ -1,8 +1,10 @@
 import React from "react";
 import {
   PAIR_NOT_FOUND_BY_ID,
+  SESSION_RECS_FETCH_BY_SESSION_AND_STUDENT_ERROR,
   SESSION_RECS_FETCH_BY_STUDENT_ERROR,
   STUDENT_NOT_FOUND_BY_ID,
+  SessionRecord,
 } from "../../model";
 import {
   CircularProgress,
@@ -20,6 +22,7 @@ import { Link } from "react-router-dom";
 import {
   useGetAllSessionRecordsByStudentIdQuery,
   useGetPairByIdQuery,
+  useGetSessionRecordsByStudentIdAndSessionIdQuery,
   useGetStudentByIdQuery,
 } from "../../redux";
 import { ResourceNotFoundException } from "../../exceptions";
@@ -81,26 +84,12 @@ const SessionRecordsTablePairCell = ({
   return <SessionRecordsTableOpponentCell opponentId={pair.studentA} />;
 };
 
-type SessionRecordsTableProps = {
-  studentId: number;
+type SessionRecordsTableContentProps = {
+  sessionRecords: SessionRecord[];
 };
-const SessionRecordsTable = ({ studentId }: SessionRecordsTableProps) => {
-  const {
-    data: studentSessionRecords,
-    isSuccess,
-    isError,
-    error,
-  } = useGetAllSessionRecordsByStudentIdQuery(studentId);
-
-  if (!isSuccess) {
-    if (isError)
-      throw new ResourceNotFoundException(
-        SESSION_RECS_FETCH_BY_STUDENT_ERROR(studentId)
-      );
-
-    return <CircularProgress />;
-  }
-
+const SessionRecordsTableContent = ({
+  sessionRecords,
+}: SessionRecordsTableContentProps) => {
   const sessionRecordsRowsHeaders = (
     <TableRow>
       <TableCell align="left">№</TableCell>
@@ -111,7 +100,7 @@ const SessionRecordsTable = ({ studentId }: SessionRecordsTableProps) => {
     </TableRow>
   );
 
-  const sessionRecordsRows = studentSessionRecords.map((record, index) => {
+  const sessionRecordsRows = sessionRecords.map((record, index) => {
     return (
       <TableRow
         hover
@@ -142,6 +131,82 @@ const SessionRecordsTable = ({ studentId }: SessionRecordsTableProps) => {
       </Table>
     </TableContainer>
   );
+};
+
+type AllStudentsSessionRecordsProps = {
+  studentId: number;
+};
+const AllStudentsSessionRecords = ({
+  studentId,
+}: AllStudentsSessionRecordsProps) => {
+  const {
+    data: studentSessionRecords,
+    isSuccess,
+    isError,
+    error,
+  } = useGetAllSessionRecordsByStudentIdQuery(studentId);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(
+        SESSION_RECS_FETCH_BY_STUDENT_ERROR(studentId)
+      );
+
+    return null;
+  }
+
+  return <SessionRecordsTableContent sessionRecords={studentSessionRecords} />;
+};
+
+type StudentSessionRecordsForSessionProps = {
+  studentId: number;
+  sessionId: number;
+};
+const StudentSessionRecordsForSession = ({
+  studentId,
+  sessionId,
+}: StudentSessionRecordsForSessionProps) => {
+  const {
+    data: sessionRecords,
+    isSuccess,
+    isError,
+    error,
+  } = useGetSessionRecordsByStudentIdAndSessionIdQuery({
+    studentId,
+    sessionId,
+  });
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(
+        SESSION_RECS_FETCH_BY_SESSION_AND_STUDENT_ERROR(studentId, sessionId)
+      );
+
+    return null;
+  }
+
+  return <SessionRecordsTableContent sessionRecords={sessionRecords} />;
+};
+
+type SessionRecordsTableProps = {
+  studentId: number;
+  sessionId?: number;
+};
+const SessionRecordsTable = ({
+  studentId,
+  sessionId,
+}: SessionRecordsTableProps) => {
+  const content =
+    sessionId !== undefined ? (
+      <StudentSessionRecordsForSession
+        studentId={studentId}
+        sessionId={sessionId}
+      />
+    ) : (
+      <AllStudentsSessionRecords studentId={studentId} />
+    );
+
+  return content;
 };
 
 export default SessionRecordsTable;

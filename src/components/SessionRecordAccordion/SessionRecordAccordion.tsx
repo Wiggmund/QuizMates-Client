@@ -19,6 +19,7 @@ import {
   GROUP_STUDENTS_FETCH_ERROR,
   Group,
   HOST_NOT_FOUND_BY_ID,
+  SESSION_RECS_FETCH_BY_SESSION_AND_STUDENT_ERROR,
   SESSION_RECS_FETCH_BY_SESSION_ERROR,
   SESSION_RECS_FETCH_BY_STUDENT_ERROR,
   Session,
@@ -36,6 +37,7 @@ import {
   useGetAllSessionRecordsByStudentIdQuery,
   useGetHostByIdQuery,
   useGetHostBySessionIdQuery,
+  useGetSessionRecordsByStudentIdAndSessionIdQuery,
 } from "../../redux";
 import { ResourceNotFoundException } from "../../exceptions";
 import { HOST_NOT_FOUND_BY_SESSION } from "../../model/Host";
@@ -58,22 +60,28 @@ const StudentAccordion = ({
     isSuccess,
     isError,
     error,
-  } = useGetAllSessionRecordsBySessionIdQuery(session.id);
+  } = useGetSessionRecordsByStudentIdAndSessionIdQuery({
+    studentId: student.id,
+    sessionId: session.id,
+  });
 
   if (!isSuccess) {
     if (isError)
       throw new ResourceNotFoundException(
-        SESSION_RECS_FETCH_BY_SESSION_ERROR(session.id)
+        SESSION_RECS_FETCH_BY_SESSION_AND_STUDENT_ERROR(student.id, session.id)
       );
 
     return <CircularProgress />;
   }
 
-  const studentSessionRecords = sessionRecords.filter(
-    (record) => record.studentId === student.id
-  );
-  const studentScoreSum = getScore(studentSessionRecords);
+  console.log("RECORDS");
+  console.log(sessionRecords);
+
+  const studentScoreSum = getScore(sessionRecords);
+  console.log(`Score for student ${getFullName(student)}\t ${studentScoreSum}`);
+  console.log(`Group score before\t ${groupStudentsScore.current}`);
   groupStudentsScore.current += studentScoreSum;
+  console.log(`Group score after\t ${groupStudentsScore.current}`);
 
   return (
     <Accordion>
@@ -89,7 +97,7 @@ const StudentAccordion = ({
         </Stack>
       </AccordionSummary>
       <AccordionDetails>
-        <SessionRecordsTable studentId={student.id} />
+        <SessionRecordsTable studentId={student.id} sessionId={session.id} />
       </AccordionDetails>
     </Accordion>
   );
@@ -143,7 +151,7 @@ const SessionAccordion = ({
         HOST_NOT_FOUND_BY_SESSION(session.id)
       );
 
-    return <CircularProgress />;
+    return null;
   }
 
   return (

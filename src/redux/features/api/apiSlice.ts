@@ -9,6 +9,7 @@ import {
   Pair,
   Session,
   SessionRecord,
+  SessionRecordsByStudentAndSessionParams,
   Student,
   UpdateSessionDto,
 } from "../../../model";
@@ -91,6 +92,13 @@ export const apiSlice = createApi({
     getAllSessionRecordsByStudentId: builder.query<SessionRecord[], number>({
       query: (studentId) => API.sessionRecords.getAllByStudentId(studentId),
     }),
+    getSessionRecordsByStudentIdAndSessionId: builder.query<
+      SessionRecord[],
+      SessionRecordsByStudentAndSessionParams
+    >({
+      query: ({ studentId, sessionId }) =>
+        API.sessionRecords.getByStudentIdAndSessionId(studentId, sessionId),
+    }),
     getAllSessionRecordsBySessionId: builder.query<SessionRecord[], number>({
       query: (sessionId) => API.sessionRecords.getAllBySessionId(sessionId),
     }),
@@ -129,6 +137,7 @@ export const {
 
   useGetHostSessionsQuery,
   useGetHostBySessionIdQuery,
+  useGetSessionRecordsByStudentIdAndSessionIdQuery,
 
   useGenerateRandomPairsMutation,
   useUpdateSessionMutation,

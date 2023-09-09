@@ -55,6 +55,8 @@ export const API = {
       `/sessionsrecords?sessionRecordId=${sessionsRecordId}`,
     getAllByStudentId: (studentId: number) =>
       `/sessionsrecords?studentId=${studentId}`,
+    getByStudentIdAndSessionId: (studentId: number, sessionId: number) =>
+      `/sessionsrecords?studentId=${studentId}&sessionId=${sessionId}`,
     getAllBySessionId: (sessionId: number) =>
       `/sessionsrecords?sessionId=${sessionId}`,
     create: "/sessionsrecords",
