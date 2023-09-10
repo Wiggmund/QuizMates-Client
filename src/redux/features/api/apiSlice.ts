@@ -81,6 +81,12 @@ export const apiSlice = createApi({
       query: ({ sessionId, groupId }) =>
         API.sessions.getSessionGroupScore(sessionId, groupId),
     }),
+    getSessionPresentStudents: builder.query<Student[], number>({
+      query: (sessionId) => API.sessions.getSessionPresentStudents(sessionId),
+    }),
+    getSessionAbsentStudents: builder.query<Student[], number>({
+      query: (sessionId) => API.sessions.getSessionAbsentStudents(sessionId),
+    }),
     createSession: builder.mutation<Session, CreateSessionDto>({
       query: (dto) => ({
         url: API.sessions.create,
@@ -130,28 +136,34 @@ export const {
   useGetAllGroupsQuery,
   useGetAllPairsQuery,
   useGetAllStudentsQuery,
-  useGetAllSessionsQuery,
-  useGetAllSessionRecordsQuery,
-
   useGetHostByIdQuery,
   useGetGroupByIdQuery,
   useGetPairByIdQuery,
   useGetStudentByIdQuery,
-  useGetSessionByIdQuery,
-  useGetSessionRecordByIdQuery,
 
   useGetAllGroupStudentsQuery,
-
-  useGetAllSessionRecordsByStudentIdQuery,
-  useGetAllSessionRecordsBySessionIdQuery,
-
-  useGetHostSessionsQuery,
   useGetHostBySessionIdQuery,
-  useGetSessionRecordsByStudentIdAndSessionIdQuery,
-  useGetSessionStudentScoreQuery,
-  useGetSessionGroupScoreQuery,
 
   useGenerateRandomPairsMutation,
+} = apiSlice;
+
+export const {
+  useGetAllSessionRecordsQuery,
+  useGetAllSessionRecordsByStudentIdQuery,
+  useGetAllSessionRecordsBySessionIdQuery,
+  useGetSessionRecordByIdQuery,
+  useGetSessionRecordsByStudentIdAndSessionIdQuery,
+} = apiSlice;
+
+export const {
+  useGetAllSessionsQuery,
+  useGetSessionByIdQuery,
+  useGetSessionStudentScoreQuery,
+  useGetSessionGroupScoreQuery,
+  useGetHostSessionsQuery,
+  useGetSessionPresentStudentsQuery,
+  useGetSessionAbsentStudentsQuery,
+
   useUpdateSessionMutation,
   useCreateSessionRecordMutation,
   useCreateSessionMutation,

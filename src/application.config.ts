@@ -49,6 +49,10 @@ export const API = {
       `/sessions?sessionId=${sessionId}&studentId=${studentId}&score=test`,
     getSessionGroupScore: (sessionId: number, groupId: number) =>
       `/sessions?sessionId=${sessionId}&groupId=${groupId}&score=test`,
+    getSessionPresentStudents: (sessionId: number) =>
+      `/sessions?sessionId=${sessionId}&presentStudents=test`,
+    getSessionAbsentStudents: (sessionId: number) =>
+      `/sessions?sessionId=${sessionId}&absentStudents=test`,
     create: "/sessions",
     update: "/sessions",
     deleteById: "/sessions",
