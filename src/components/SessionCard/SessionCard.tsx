@@ -155,7 +155,7 @@ const SessionCard = ({ session }: SessionCardProps) => {
         {session.title}
       </Typography>
       <Typography variant="h6" color="initial">
-        {`${session.date}`}
+        {new Date(session.date).toLocaleDateString()}
       </Typography>
     </Stack>
   );

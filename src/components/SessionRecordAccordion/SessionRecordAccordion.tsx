@@ -167,7 +167,7 @@ const SessionAccordion = ({
             <SessionAccordionHostLink hostId={host.id} />
           </Stack>
           <Typography variant="caption" color="initial">
-            {`${session.date}`}
+            {new Date(session.date).toLocaleDateString()}
           </Typography>
         </Stack>
       </AccordionSummary>

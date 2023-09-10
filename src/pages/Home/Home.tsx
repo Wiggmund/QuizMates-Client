@@ -8,12 +8,12 @@ import {
 } from "../../components";
 import {
   Box,
-  Grid,
   Typography,
   styled,
   Button,
   CircularProgress,
 } from "@mui/material";
+import Grid from "@mui/material/Unstable_Grid2";
 import { Link } from "react-router-dom";
 import { Endpoints } from "../../constants";
 import {

@@ -30,7 +30,7 @@ export function distinct<T>(list: T[]): T[] {
   const result: T[] = [];
 
   list.forEach((item) => {
-    if (result.find((i) => i === item) !== undefined) {
+    if (result.find((i) => i === item) === undefined) {
       result.push(item);
     }
   });

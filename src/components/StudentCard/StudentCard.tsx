@@ -131,6 +131,8 @@ const StudentCard = (props: StudentCardProps) => {
     return <CircularProgress />;
   }
 
+  console.log("SSUDENT RECORDS");
+  console.log(studentRecords);
   const sessionsIds = distinct<number>(
     studentRecords.map((record) => record.sessionId)
   );

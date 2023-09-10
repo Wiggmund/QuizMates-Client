@@ -31,7 +31,7 @@ const StudentsTableGroupCell = ({ groupId }: StudentsTableGroupCellProps) => {
     if (isError)
       throw new ResourceNotFoundException(GROUP_NOT_FOUND_BY_ID(groupId));
 
-    return <CircularProgress />;
+    return null;
   }
 
   return (
@@ -62,7 +62,7 @@ const StudentsTableStudentRecord = ({
     if (isError)
       throw new ResourceNotFoundException(STUDENT_NOT_FOUND_BY_ID(studentId));
 
-    return <CircularProgress />;
+    return null;
   }
   return (
     <TableRow
@@ -94,7 +94,7 @@ const StudentsTable = ({ studentsIds }: StudentsTableProps) => {
   );
 
   const studentsRows = studentsIds.map((studentId) => (
-    <StudentsTableStudentRecord studentId={studentId} />
+    <StudentsTableStudentRecord studentId={studentId} key={studentId} />
   ));
 
   return (

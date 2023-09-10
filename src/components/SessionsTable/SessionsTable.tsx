@@ -31,7 +31,7 @@ const SessionTableHostCell = ({ hostId }: SessionTableHostCellsProps) => {
     if (isError)
       throw new ResourceNotFoundException(HOST_NOT_FOUND_BY_ID(hostId));
 
-    return <CircularProgress />;
+    return null;
   }
 
   return (
@@ -71,7 +71,7 @@ const SessionTableRecord = ({ sessionId }: SessionTableRecordProps) => {
       throw new ResourceNotFoundException(HOST_NOT_FOUND_BY_SESSION(sessionId));
     }
 
-    return <CircularProgress />;
+    return null;
   }
 
   const formattedDate = session.date ? `${session.date}` : "unknown";
