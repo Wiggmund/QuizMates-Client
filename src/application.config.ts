@@ -9,8 +9,6 @@ export const API = {
     getById: (hostId: number) => `/hosts?hostId=${hostId}`,
     getHostBySessionId: (sessionId: number) => {
       const url = `/session?sessionId=${sessionId}`;
-      console.log("URL");
-      console.log(url);
       return url;
     },
     create: "/hosts",

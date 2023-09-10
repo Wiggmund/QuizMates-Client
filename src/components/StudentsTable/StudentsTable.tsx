@@ -64,8 +64,6 @@ const StudentsTableStudentRecord = ({
 
     return <CircularProgress />;
   }
-  console.log("StudentsTableStudentRecord");
-  console.log(student);
   return (
     <TableRow
       hover

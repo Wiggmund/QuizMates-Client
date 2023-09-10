@@ -75,10 +75,6 @@ const SessionTableRecord = ({ sessionId }: SessionTableRecordProps) => {
   }
 
   const formattedDate = session.date ? `${session.date}` : "unknown";
-  console.log("SESSION");
-  console.log(session);
-  console.log("HOST");
-  console.log(host);
   return (
     <TableRow
       hover

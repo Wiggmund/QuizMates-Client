@@ -19,9 +19,12 @@ import {
   GROUP_STUDENTS_FETCH_ERROR,
   Group,
   HOST_NOT_FOUND_BY_ID,
+  SESSION_GROUP_SCORE_ERROR,
+  SESSION_PRESENT_STUDENTS_ERROR,
   SESSION_RECS_FETCH_BY_SESSION_AND_STUDENT_ERROR,
   SESSION_RECS_FETCH_BY_SESSION_ERROR,
   SESSION_RECS_FETCH_BY_STUDENT_ERROR,
+  SESSION_STUDENT_SCORE_ERROR,
   Session,
   SessionRecord,
   Student,
@@ -41,6 +44,11 @@ import {
 } from "../../redux";
 import { ResourceNotFoundException } from "../../exceptions";
 import { HOST_NOT_FOUND_BY_SESSION } from "../../model/Host";
+import {
+  useGetSessionGroupScoreQuery,
+  useGetSessionPresentStudentsQuery,
+  useGetSessionStudentScoreQuery,
+} from "../../redux/features/api/apiSlice";
 
 const getScore = (sessionRecords: SessionRecord[]): number =>
   sessionRecords.reduce((acc, record) => acc + record.score, 0);
@@ -48,40 +56,26 @@ const getScore = (sessionRecords: SessionRecord[]): number =>
 type StudentAccordionProps = {
   student: Student;
   session: Session;
-  groupStudentsScore: React.MutableRefObject<number>;
 };
-const StudentAccordion = ({
-  student,
-  session,
-  groupStudentsScore,
-}: StudentAccordionProps) => {
+const StudentAccordion = ({ student, session }: StudentAccordionProps) => {
   const {
-    data: sessionRecords,
+    data: studentScore,
     isSuccess,
     isError,
     error,
-  } = useGetSessionRecordsByStudentIdAndSessionIdQuery({
-    studentId: student.id,
+  } = useGetSessionStudentScoreQuery({
     sessionId: session.id,
+    studentId: student.id,
   });
 
   if (!isSuccess) {
     if (isError)
       throw new ResourceNotFoundException(
-        SESSION_RECS_FETCH_BY_SESSION_AND_STUDENT_ERROR(student.id, session.id)
+        SESSION_STUDENT_SCORE_ERROR(session.id, student.id)
       );
 
-    return <CircularProgress />;
+    return null;
   }
-
-  console.log("RECORDS");
-  console.log(sessionRecords);
-
-  const studentScoreSum = getScore(sessionRecords);
-  console.log(`Score for student ${getFullName(student)}\t ${studentScoreSum}`);
-  console.log(`Group score before\t ${groupStudentsScore.current}`);
-  groupStudentsScore.current += studentScoreSum;
-  console.log(`Group score after\t ${groupStudentsScore.current}`);
 
   return (
     <Accordion>
@@ -92,7 +86,7 @@ const StudentAccordion = ({
       >
         <Stack direction="row" alignItems="center" spacing={2}>
           <Typography>{getFullName(student)}</Typography>
-          <SimpleChip type="score" score={studentScoreSum} />
+          <SimpleChip type="score" score={studentScore} />
           {session.bestStudent === student.id && <SimpleChip type="best" />}
         </Stack>
       </AccordionSummary>
@@ -186,21 +180,31 @@ type GroupAccordionProps = {
   group: Group;
   best: boolean;
   session: Session;
+  presentStudents: Student[];
 };
-const GroupAccordion = ({ group, best, session }: GroupAccordionProps) => {
-  const groupStudentsScore = useRef<number>(0);
+const GroupAccordion = ({
+  group,
+  best,
+  session,
+  presentStudents,
+}: GroupAccordionProps) => {
   const {
-    data: groupStudents,
+    data: groupScore,
     isSuccess,
     isError,
     error,
-  } = useGetAllGroupStudentsQuery(group.id);
+  } = useGetSessionGroupScoreQuery({
+    sessionId: session.id,
+    groupId: group.id,
+  });
 
   if (!isSuccess) {
     if (isError)
-      throw new ResourceNotFoundException(GROUP_STUDENTS_FETCH_ERROR(group.id));
+      throw new ResourceNotFoundException(
+        SESSION_GROUP_SCORE_ERROR(session.id, group.id)
+      );
 
-    return <CircularProgress />;
+    return null;
   }
 
   return (
@@ -214,15 +218,14 @@ const GroupAccordion = ({ group, best, session }: GroupAccordionProps) => {
           <Typography color="initial">
             {getGroupNameOrUnknown(group)}
           </Typography>
-          <SimpleChip type="score" score={groupStudentsScore.current} />
+          <SimpleChip type="score" score={groupScore} />
           {best && <SimpleChip type="best" />}
         </Stack>
       </AccordionSummary>
       <AccordionDetails>
-        {groupStudents.map((student) => (
+        {presentStudents.map((student) => (
           <StudentAccordion
             student={student}
-            groupStudentsScore={groupStudentsScore}
             session={session}
             key={student.id}
           />
@@ -236,7 +239,34 @@ type GroupAccordionsListProps = {
   session: Session;
   groups: Group[];
 };
+type GroupDict = {
+  [key: number]: Student[];
+};
 const GroupAccordionsList = ({ groups, session }: GroupAccordionsListProps) => {
+  const {
+    data: presentStudents,
+    isSuccess,
+    isError,
+    error,
+  } = useGetSessionPresentStudentsQuery(session.id);
+
+  if (!isSuccess) {
+    if (isError)
+      throw new ResourceNotFoundException(
+        SESSION_PRESENT_STUDENTS_ERROR(session.id)
+      );
+
+    return null;
+  }
+
+  const studentsByGroup: GroupDict = {};
+  groups.forEach((g) => {
+    const groupPresentStudents = presentStudents.filter(
+      (st) => st.groupId === g.id
+    );
+    studentsByGroup[g.id] = groupPresentStudents;
+  });
+
   return (
     <>
       {groups.map((group) => {
@@ -246,6 +276,7 @@ const GroupAccordionsList = ({ groups, session }: GroupAccordionsListProps) => {
             session={session}
             key={group.id}
             best={session.bestGroup === group.id}
+            presentStudents={studentsByGroup[group.id]}
           />
         );
       })}

@@ -65,10 +65,6 @@ const Home = (props: Props) => {
     return <CircularProgress />;
   }
 
-  console.log("Home page");
-  console.log(students);
-  console.log(hosts);
-  console.log(groups);
   const studentsAmount = students.length;
   const groupsAmount = groups.length;
   const hostsAmount = hosts.length;

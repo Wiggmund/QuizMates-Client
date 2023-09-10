@@ -57,8 +57,6 @@ const GroupsTable = (props: GroupsTableProps) => {
 
   const groupsRows = groups.map((group) => {
     const teamLead = studentsMap[group.teamleadId];
-    console.log("teamLead");
-    console.log(teamLead);
     return (
       <TableRow
         hover

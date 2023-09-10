@@ -32,8 +32,6 @@ const HostsTable = (props: HostsTableProps) => {
       <TableCell align="left">Full Name</TableCell>
     </TableRow>
   );
-  console.log("Hosts table");
-  console.log(hosts);
   const hostsRows = hosts.map((host) => (
     <TableRow
       hover

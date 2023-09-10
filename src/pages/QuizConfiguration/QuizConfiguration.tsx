@@ -22,6 +22,7 @@ import { getFullName } from "../../utils";
 import {
   ALL_GROUPS_FETCH_ERROR,
   ALL_STUDENTS_FETCH_ERROR,
+  CreateSessionRecordDto,
   Group,
   Host,
   SessionStatus,
@@ -43,6 +44,7 @@ import {
 import { Endpoints } from "../../constants";
 import {
   useCreateSessionMutation,
+  useCreateSessionRecordMutation,
   useGetAllGroupsQuery,
   useGetAllHostsQuery,
   useGetAllStudentsQuery,
@@ -125,6 +127,7 @@ const QuizConfiguration = (props: Props) => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [absentStudents, setAbsentStudents] = useState<Student[]>([]);
   const dispatch = useAppDispatch();
+  const [createSessionRecord] = useCreateSessionRecordMutation();
   const currentQuizId = useAppSelector((state) => state.quizes.currentQuizId);
   const { title, description } = useAppSelector(
     (state) => state.quizes.sessionConfig
@@ -302,8 +305,7 @@ const QuizConfiguration = (props: Props) => {
     dispatch(
       addPresentStudents({ quizId: currentQuizId, data: presentStudents })
     );
-    console.log("HOSTS");
-    console.log(hosts);
+
     const currentSession = await createSession({
       title,
       description,
@@ -317,6 +319,22 @@ const QuizConfiguration = (props: Props) => {
       ...currentSession,
       status: SessionStatus.STARTED,
     });
+    const absentStudentsRecords = absentStudents.map((st) => {
+      const record: CreateSessionRecordDto = {
+        sessionId: currentSession.id,
+        hostId: hosts[0] ? hosts[0].id : 1,
+        action: "ASK",
+        studentId: st.id,
+        score: 0,
+        pairId: null as unknown as number,
+        wasPresent: false,
+        hostNotes: "",
+        question: "",
+      };
+
+      return record;
+    });
+    absentStudentsRecords.forEach((dto) => createSessionRecord(dto));
   };
 
   return (
